@@ -23,7 +23,9 @@ namespace BamChatBot.Controllers
         private readonly string _appId;
         private readonly ConcurrentDictionary<string, ConversationReference> _conversationReferences;
         private readonly IBot _bot;
-        public NotifyController(IBotFrameworkHttpAdapter adapter, IConfiguration configuration, ConcurrentDictionary<string, ConversationReference> conversationReferences, IBot bot)
+		private ProcessStatus _processStatus;
+
+		public NotifyController(IBotFrameworkHttpAdapter adapter, IConfiguration configuration, ConcurrentDictionary<string, ConversationReference> conversationReferences, IBot bot)
         {
             _adapter = adapter;
             _appId = configuration["MicrosoftAppId"];
@@ -43,11 +45,11 @@ namespace BamChatBot.Controllers
 
             JObject jProcessStatus = json;
 
-            var processStatus = jProcessStatus.ToObject<ProcessStatus>();
+            _processStatus = jProcessStatus.ToObject<ProcessStatus>();
 
             foreach (var conversationReference in _conversationReferences.Values)
             {
-                if(conversationReference.ActivityId == processStatus.ActivityId)
+                if(conversationReference.ActivityId == _processStatus.ActivityId)
                 {
                     await ((BotAdapter)_adapter).ContinueConversationAsync(_appId, conversationReference, BotCallback, default(CancellationToken));
                 }
@@ -63,12 +65,17 @@ namespace BamChatBot.Controllers
 
         private async Task BotCallback(ITurnContext turnContext, CancellationToken cancellationToken)
         {
+			
             var serviceUrl = turnContext.Activity.ServiceUrl;
             // If you encounter permission-related errors when sending this message, see
             // https://aka.ms/BotTrustServiceUrl
             MicrosoftAppCredentials.TrustServiceUrl(serviceUrl);
-            await turnContext.SendActivityAsync("proactive hello");
-           // await _adapter.ProcessAsync(Request, Response, _bot);
+			var message = MessageFactory.Text("Hello, process " + _processStatus.Process + " has finished with following status."+Environment.NewLine+
+				"Status: "+_processStatus.State +Environment.NewLine+
+				"Start Time: "+_processStatus.Start+Environment.NewLine+
+				"End Time: " + _processStatus.End);
+			await turnContext.SendActivityAsync(message);
+          
         }
     }
 }

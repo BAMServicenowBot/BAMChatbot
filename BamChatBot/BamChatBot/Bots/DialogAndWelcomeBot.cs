@@ -3,14 +3,9 @@
 //
 // Generated with Bot Builder V4 SDK Template for Visual Studio CoreBot v4.6.2
 
-using System;
-using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
-using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using BamChatBot.Models;
@@ -23,7 +18,7 @@ using Newtonsoft.Json;
 
 namespace BamChatBot.Bots
 {
-public class DialogAndWelcomeBot<T> : DialogBot<T>
+	public class DialogAndWelcomeBot<T> : DialogBot<T>
     where T : Dialog
 {
     public DialogAndWelcomeBot(ConversationState conversationState, UserState userState, T dialog, ILogger<DialogBot<T>> logger, ConcurrentDictionary<string, ConversationReference> conversationReferences)
