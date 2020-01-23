@@ -40,9 +40,10 @@ namespace BamChatBot.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> PostProcessStatus(string data)
+        public async Task<IActionResult> Post([FromBody]  ProcessStatus processStatus)
         {
-			var processStatus = JsonConvert.DeserializeObject<ProcessStatus>(data);
+			//var processStatus = new ProcessStatus();
+			//var processStatus = JsonConvert.DeserializeObject<ProcessStatus>(data);
 			/* dynamic json = jsonData;
 
 			 JObject jProcessStatus = json;
