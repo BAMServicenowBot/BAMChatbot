@@ -40,14 +40,15 @@ namespace BamChatBot.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> PostProcessStatus(ProcessStatus processStatus)
+        public async Task<IActionResult> PostProcessStatus(string data)
         {
-           /* dynamic json = jsonData;
+			var processStatus = JsonConvert.DeserializeObject<ProcessStatus>(data);
+			/* dynamic json = jsonData;
 
-            JObject jProcessStatus = json;
-			JsonConvert.DeserializeObject<ProcessStatus>(jProcessStatus);
-			var processStatus = jProcessStatus.ToObject<ProcessStatus>();
-			processStatus = _processStatus;*/
+			 JObject jProcessStatus = json;
+			 JsonConvert.DeserializeObject<ProcessStatus>(jProcessStatus);
+			 var processStatus = jProcessStatus.ToObject<ProcessStatus>();
+			 processStatus = _processStatus;*/
 			var conversationReferenceActivityIds = new List<string>();
 
 			foreach (var conversationReference in _conversationReferences.Values)
