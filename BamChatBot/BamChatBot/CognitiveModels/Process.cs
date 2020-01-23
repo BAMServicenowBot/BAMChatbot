@@ -14,7 +14,8 @@ namespace BamChatBot.CognitiveModels
             StartProcess,
             CheckState,
             None,
-            Done
+			Stop,
+			Done
         };
         public Dictionary<Intent, IntentScore> Intents;
         public class _Entities

@@ -52,7 +52,7 @@ namespace BamChatBot.Controllers
 			foreach (var conversationReference in _conversationReferences.Values)
             {
 				conversationReferenceActivityIds.Add(conversationReference.ActivityId);
-
+				await ((BotAdapter)_adapter).ContinueConversationAsync(_appId, conversationReference, BotCallback, default(CancellationToken));
 				if (conversationReference.ActivityId == _processStatus.ActivityId)
                 {
                     await ((BotAdapter)_adapter).ContinueConversationAsync(_appId, conversationReference, BotCallback, default(CancellationToken));
@@ -61,7 +61,7 @@ namespace BamChatBot.Controllers
             // Let the caller know proactive messages have been sent
             return new ContentResult()
             {
-                Content = "<html><body><h1>Process "+ _processStatus.Process+" appId "+_appId+ "_processStatus activityId " + _processStatus.ActivityId + "conversationReference.ActivityId " + conversationReferenceActivityIds.ToString() + " has finished.</h1></body></html>",
+                Content = "<html><body><h1>Process "+ _processStatus.Process+" appId "+_appId+ "_processStatus activityId " +  _processStatus.ActivityId + "conversationReference.ActivityId " + string.Join(",", conversationReferenceActivityIds) + " has finished.</h1></body></html>",
                 ContentType = "text/html",
                 StatusCode = (int)HttpStatusCode.OK,
             };

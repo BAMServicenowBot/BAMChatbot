@@ -102,7 +102,8 @@ namespace BamChatBot.Dialogs
                      case Process.Intent.CheckState:
                          processDetails.Action = "check status";
                          return await stepContext.BeginDialogAsync(nameof(ProcessDialog), processDetails, cancellationToken);
-
+					case Process.Intent.Stop:
+						//check if the process is running
              case Process.Intent.Done:
              return await stepContext.EndDialogAsync(stepContext, cancellationToken);
 
