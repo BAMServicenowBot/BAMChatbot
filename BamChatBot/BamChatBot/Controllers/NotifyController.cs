@@ -32,6 +32,7 @@ namespace BamChatBot.Controllers
             _appId = configuration["MicrosoftAppId"];
             _conversationReferences = conversationReferences;
             _bot = bot;
+			_processStatus = new ProcessStatus();
 
             if (string.IsNullOrEmpty(_appId))
             {
@@ -42,14 +43,7 @@ namespace BamChatBot.Controllers
         [HttpPost]
         public async Task<IActionResult> Post([FromBody]  ProcessStatus processStatus)
         {
-			//var processStatus = new ProcessStatus();
-			//var processStatus = JsonConvert.DeserializeObject<ProcessStatus>(data);
-			/* dynamic json = jsonData;
-
-			 JObject jProcessStatus = json;
-			 JsonConvert.DeserializeObject<ProcessStatus>(jProcessStatus);
-			 var processStatus = jProcessStatus.ToObject<ProcessStatus>();
-			 processStatus = _processStatus;*/
+			_processStatus = processStatus;
 			var conversationReferenceActivityIds = new List<string>();
 
 			foreach (var conversationReference in _conversationReferences.Values)
@@ -58,9 +52,10 @@ namespace BamChatBot.Controllers
 				await ((BotAdapter)_adapter).ContinueConversationAsync(_appId, conversationReference, BotCallback, default(CancellationToken));
 				if (conversationReference.ActivityId == processStatus.ActivityId)
                 {
-                    await ((BotAdapter)_adapter).ContinueConversationAsync(_appId, conversationReference, BotCallback, default(CancellationToken));
+                   // await ((BotAdapter)_adapter).ContinueConversationAsync(_appId, conversationReference, BotCallback, default(CancellationToken));
                 }
-            }
+				await ((BotAdapter)_adapter).ContinueConversationAsync(_appId, conversationReference, BotCallback, default(CancellationToken));
+			}
             // Let the caller know proactive messages have been sent
             return new ContentResult()
             {
@@ -72,12 +67,11 @@ namespace BamChatBot.Controllers
 
         private async Task BotCallback(ITurnContext turnContext, CancellationToken cancellationToken)
         {
-			
             var serviceUrl = turnContext.Activity.ServiceUrl;
             // If you encounter permission-related errors when sending this message, see
             // https://aka.ms/BotTrustServiceUrl
             MicrosoftAppCredentials.TrustServiceUrl(serviceUrl);
-			var message = MessageFactory.Text("Hello, process " + _processStatus.Process + " has finished with following status."+Environment.NewLine+
+			var message = MessageFactory.Text("Process " + _processStatus.Process + " has finished with following status."+Environment.NewLine+
 				"Status: "+_processStatus.State +Environment.NewLine+
 				"Start Time: "+_processStatus.Start+Environment.NewLine+
 				"End Time: " + _processStatus.End);
