@@ -23,9 +23,10 @@ namespace BamChatBot
                 // Log any leaked exception from the application.
                 logger.LogError(exception, $"[OnTurnError] unhandled error : {exception.Message}");
 
-                // Send a message to the user
-                var errorMessageText = "The bot encounted an error or bug.";
-                var errorMessage = MessageFactory.Text(errorMessageText, errorMessageText, InputHints.ExpectingInput);
+				// Send a message to the user
+				var errorMessageText = exception.Message;//"The bot encounted an error or bug.";
+
+				var errorMessage = MessageFactory.Text(errorMessageText, errorMessageText, InputHints.ExpectingInput);
                 await turnContext.SendActivityAsync(errorMessage);
 
                 errorMessageText = "To continue to run this bot, please fix the bot source code.";

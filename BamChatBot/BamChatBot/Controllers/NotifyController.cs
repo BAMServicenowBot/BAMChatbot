@@ -49,12 +49,12 @@ namespace BamChatBot.Controllers
 			foreach (var conversationReference in _conversationReferences.Values)
             {
 				conversationReferenceActivityIds.Add(conversationReference.ActivityId);
-				await ((BotAdapter)_adapter).ContinueConversationAsync(_appId, conversationReference, BotCallback, default(CancellationToken));
 				if (conversationReference.ActivityId == processStatus.ActivityId)
                 {
                    // await ((BotAdapter)_adapter).ContinueConversationAsync(_appId, conversationReference, BotCallback, default(CancellationToken));
                 }
 				await ((BotAdapter)_adapter).ContinueConversationAsync(_appId, conversationReference, BotCallback, default(CancellationToken));
+				break;
 			}
             // Let the caller know proactive messages have been sent
             return new ContentResult()
