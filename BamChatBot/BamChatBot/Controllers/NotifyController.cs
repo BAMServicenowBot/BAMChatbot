@@ -56,10 +56,14 @@ namespace BamChatBot.Controllers
 				await ((BotAdapter)_adapter).ContinueConversationAsync(_appId, conversationReference, BotCallback, default(CancellationToken));
 				break;
 			}
-            // Let the caller know proactive messages have been sent
-            return new ContentResult()
+			var message = MessageFactory.Text("Process " + _processStatus.Process + " has finished with following status." + Environment.NewLine +
+				"Status: " + _processStatus.State + Environment.NewLine +
+				"Start Time: " + _processStatus.Start + Environment.NewLine +
+				"End Time: " + _processStatus.End);
+			// Let the caller know proactive messages have been sent
+			return new ContentResult()
             {
-                Content = "<html><body><h1>Process "+ processStatus.Process+" appId "+_appId+ "processStatus activityId " + processStatus.ActivityId + "conversationReference.ActivityId " + string.Join(",", conversationReferenceActivityIds) + " has finished.</h1></body></html>",
+                Content = "<html><body><h1>Process "+ message + " has finished.</h1></body></html>",
                 ContentType = "text/html",
                 StatusCode = (int)HttpStatusCode.OK,
             };
