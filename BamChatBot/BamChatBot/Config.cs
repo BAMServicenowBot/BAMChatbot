@@ -137,6 +137,38 @@ namespace BamChatBot
             return apiResponse;
 
         }
+
+		internal APIResponse StopProcess(string processId)
+		{
+			var apiResponse = new APIResponse();
+			var apiPath = GetApiPath();
+			var url = apiPath + "stopProcess";
+			HttpClient client = new HttpClient();
+			client.BaseAddress = new Uri(url);
+			var urlParameters = "?sys_id=" + processId;
+			//add basic authorization
+			AddAuthorization(client);
+			// Add an Accept header for JSON format.
+			client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+			try
+			{
+				HttpResponseMessage response = client.GetAsync(urlParameters).Result;
+				var obj = response.Content.ReadAsStringAsync();
+				
+				 apiResponse = new APIResponse
+				{
+					Content = obj.Result,
+					IsSuccess = response.IsSuccessStatusCode
+				};
+			}
+			catch (Exception ex)
+			{
+
+				apiResponse.Content = ex.Message;
+			}
+			return apiResponse;
+		}
     }
 
 }

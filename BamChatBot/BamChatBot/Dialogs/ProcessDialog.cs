@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using BamChatBot.Models;
+using BamChatBot.Services;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Builder.Dialogs.Choices;
@@ -19,6 +20,7 @@ namespace BamChatBot.Dialogs
             AddDialog(new ChoicePrompt(nameof(ChoicePrompt)));
             AddDialog(new ConfirmPrompt(nameof(ConfirmPrompt)));
             AddDialog(new StatusDialog());
+			AddDialog(new StopProcessDialog());
             AddDialog(new WaterfallDialog(nameof(WaterfallDialog), new WaterfallStep[]
             {
                 IntroStepAsync,
@@ -38,7 +40,7 @@ namespace BamChatBot.Dialogs
         private async Task<DialogTurnResult> IntroStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
             var processDetails = (ProcessDetails)stepContext.Options;
-            var snConfig = new Config();
+            var snConfig = new RPAService();
             var result = snConfig.GetApiResult("userProcesses");
             if (!result.IsSuccess)
             {
@@ -122,7 +124,7 @@ namespace BamChatBot.Dialogs
             selectedProcess.StartedBy = "chat_bot";
             var action = (FoundChoice)stepContext.Result;
             processDetails.ConfirmAction = action.Value;
-            var config = new Config();
+            var config = new RPAService();
 
             if (action.Value == "Yes") { 
             if (processDetails.Action == "start")
@@ -161,11 +163,16 @@ namespace BamChatBot.Dialogs
                     }, cancellationToken);
                 }
             }
-            else
+            else if(processDetails.Action == "check status")
             {
                 return await stepContext.BeginDialogAsync(nameof(StatusDialog), processDetails, cancellationToken);
             }
-            }
+				else
+				{
+					return await stepContext.BeginDialogAsync(nameof(StopProcessDialog), processDetails, cancellationToken);
+
+				}
+			}
             else
             {
                 //start over

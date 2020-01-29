@@ -11,11 +11,8 @@ namespace BamChatBot.CognitiveModels
         public string AlteredText;
         public enum Intent
         {
-            StartProcess,
-            CheckState,
             None,
-			Stop,
-			Done
+			RPA
         };
         public Dictionary<Intent, IntentScore> Intents;
         public class _Entities

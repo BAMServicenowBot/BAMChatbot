@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
+using BamChatBot.Services;
 using Newtonsoft.Json;
 
 namespace BamChatBot.Models
@@ -17,8 +18,8 @@ namespace BamChatBot.Models
 
         internal User GetUser()
         {
-            var snConfig = new Config();
-            var result = snConfig.GetApiResult("getUser");
+            var rpaService = new RPAService();
+            var result = rpaService.GetApiResult("getUser");
             var user = JsonConvert.DeserializeObject<User>(result.Content);
           /*  var user = new User();
             //get user first name  
@@ -59,5 +60,21 @@ namespace BamChatBot.Models
                 : name.Substring(0, name.IndexOf("@"));
             return userName;
         }
+
+		internal void GetUserProcess(ProcessDetails processDetails)
+		{
+			var rpaService = new RPAService();
+			var result = rpaService.GetApiResult("userProcesses");
+			if (!result.IsSuccess)
+			{
+				processDetails.Error = JsonConvert.DeserializeObject<ProcessModel>(result.Content).Error;
+			}
+			else
+			{
+				var processes = JsonConvert.DeserializeObject<List<ProcessModel>>(result.Content);
+				processDetails.Processes = processes;
+			}
+		}
+
     }
 }
