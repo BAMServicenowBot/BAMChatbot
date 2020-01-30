@@ -107,9 +107,9 @@ namespace BamChatBot.Services
 					IsSuccess = response.IsSuccessStatusCode
 				};
 			}
-			catch (Exception)
+			catch (Exception ex)
 			{
-
+				apiResponse.Error = ex.Message;
 			}
 
 			return apiResponse;

@@ -52,8 +52,9 @@ namespace BamChatBot.Controllers
 				if (conversationReference.ActivityId == processStatus.ActivityId)
                 {
 				await ((BotAdapter)_adapter).ContinueConversationAsync(_appId, conversationReference, BotCallback, default(CancellationToken));
+					break;
 				}
-				break;
+				
 			}
 			var message = MessageFactory.Text("Process " + _processStatus.Process + " has finished with following status." + Environment.NewLine +
 				"Status: " + _processStatus.State + Environment.NewLine +

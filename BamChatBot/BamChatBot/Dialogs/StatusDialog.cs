@@ -101,16 +101,25 @@ namespace BamChatBot.Dialogs
 			}
 			
 			var response = rpaService.ProcessStatus(apiRequest);
-			var processSatus = JsonConvert.DeserializeObject<List<ProcessStatus>>(response.Content);
-
-			var text = processSatus.Count > 1 ? "Here are the status for " : "Here is the latest status for ";
-			text += processDetails.ProcessSelected.Name + " process." + Environment.NewLine;
-			foreach (var item in processSatus)
+			var text = string.Empty;
+			if (response.IsSuccess)
 			{
-				text += "Start Time: " + item.Start + Environment.NewLine +
-					"End Time: " + item.End + Environment.NewLine +
-					"Status: " + item.State + Environment.NewLine;
+				var processSatus = JsonConvert.DeserializeObject<List<ProcessStatus>>(response.Content);
 
+				text = processSatus.Count > 1 ? "Here are the status for " : "Here is the latest status for ";
+				text += processDetails.ProcessSelected.Name + " process." + Environment.NewLine;
+				foreach (var item in processSatus)
+				{
+
+					text += "Start Time: " + item.Start + Environment.NewLine +
+						"End Time: " + item.End + Environment.NewLine +
+						"Status: " + item.State + Environment.NewLine;
+
+				}
+			}
+			else
+			{
+				text = response.Content;
 			}
 			await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions
 			{
