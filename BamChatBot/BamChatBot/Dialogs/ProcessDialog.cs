@@ -41,7 +41,7 @@ namespace BamChatBot.Dialogs
         {
             var processDetails = (ProcessDetails)stepContext.Options;
             var snConfig = new RPAService();
-            var result = snConfig.GetApiResult("userProcesses");
+            var result = snConfig.GetApiResult("userProcesses", "");
             if (!result.IsSuccess)
             {
                 processDetails.Error = JsonConvert.DeserializeObject<ProcessModel>(result.Content).Error;

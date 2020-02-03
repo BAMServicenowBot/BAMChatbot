@@ -33,27 +33,34 @@ namespace BamChatBot.Bots
 
     protected override async Task OnMembersAddedAsync(IList<ChannelAccount> membersAdded, ITurnContext<IConversationUpdateActivity> turnContext, CancellationToken cancellationToken)
     {
-        foreach (var member in membersAdded)
+
+		foreach (var member in membersAdded)
         {
             // Greet anyone that was not the target (recipient) of this message.
             // To learn more about Adaptive Cards, see https://aka.ms/msbot-adaptivecards for morBe details.
             if (member.Id != turnContext.Activity.Recipient.Id)
             {
-					
+					this.AddConversationReference(turnContext.Activity as Activity);		
 					var user = new User();
                     //var _user = user.GetUser();
 					var _user = await _userAccessor.GetAsync(turnContext, () => new User(), cancellationToken);
-					
+					var msg = string.Empty;
 					if (!string.IsNullOrWhiteSpace(_user.UserId))
                     {
-                        await turnContext.SendActivityAsync(MessageFactory.Text("Hello "+_user.Name+", welcome to Bayview ChatBot!"), cancellationToken);
-                        await turnContext.SendActivityAsync(MessageFactory.Text("What can I help you with today?"), cancellationToken);
-                    }
+						msg = "Hello " + _user.Name + ", welcome to Bayview ChatBot!";
+						
+					}
                     else
                     {
-                       await turnContext.SendActivityAsync(MessageFactory.Text(_user.Name), cancellationToken);
-                    }
-            }
+						/*user.Name = "Dayamis Ruiz";
+						user.UserId = "f8e33eb11b94b384dbc4c91e1e4bcb9b";
+						await _userAccessor.SetAsync(turnContext, user, cancellationToken);*/
+						msg = "Welcome to Bayview ChatBot!";
+						// await turnContext.SendActivityAsync(MessageFactory.Text(_user.Name), cancellationToken);
+					}
+					await turnContext.SendActivityAsync(MessageFactory.Text(msg), cancellationToken);
+					await turnContext.SendActivityAsync(MessageFactory.Text("What can I help you with today?"), cancellationToken);
+				}
                
         }
     }

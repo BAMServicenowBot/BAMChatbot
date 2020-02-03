@@ -24,15 +24,17 @@ namespace BamChatBot.Dialogs
     {
         private readonly  ProcessRecognizer _luisRecognizer;
         protected readonly ILogger Logger;
+		protected readonly IStatePropertyAccessor<User> _userAccessor;
 
-        // Dependency injection uses this constructor to instantiate MainDialog
-        public MainDialog(ProcessRecognizer luisRecognizer, ILogger<MainDialog> logger)
+		// Dependency injection uses this constructor to instantiate MainDialog
+		public MainDialog(ProcessRecognizer luisRecognizer, ILogger<MainDialog> logger, UserState userState)
             : base(nameof(MainDialog))
         {
             _luisRecognizer = luisRecognizer;
             Logger = logger;
+			_userAccessor =  userState.CreateProperty<User>(nameof(User));
 
-            AddDialog(new TextPrompt(nameof(TextPrompt)));
+			AddDialog(new TextPrompt(nameof(TextPrompt)));
             AddDialog(new ChoicePrompt(nameof(ChoicePrompt)));
             AddDialog(new StartProcessDialog());
 			AddDialog(new StatusDialog());
@@ -99,12 +101,9 @@ namespace BamChatBot.Dialogs
 
 		private async Task<DialogTurnResult> ActStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
 		{
-			var user = new User();
-			var processDetails = new ProcessDetails
-			{
-				UserName = user.GetLoginUserName()
-
-			};
+			
+			var processDetails = new ProcessDetails();
+			
 
 			if (stepContext.Result != null)
 			{
@@ -124,11 +123,9 @@ namespace BamChatBot.Dialogs
 		private  async Task<DialogTurnResult> RecognizeText(WaterfallStepContext stepContext,  CancellationToken cancellationToken)
 		{
 			var user = new User();
-			var processDetails = new ProcessDetails
-			{
-				UserName = user.GetLoginUserName()
 
-			};
+			var processDetails = new ProcessDetails();
+			
 			try
 			{
 				var luisResult = await _luisRecognizer.RecognizeAsync<Process>(stepContext.Context, cancellationToken);
@@ -250,7 +247,10 @@ namespace BamChatBot.Dialogs
 
         private async Task<DialogTurnResult> FinalStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
-			var processDetails = new ProcessDetails();
+			var _user = await _userAccessor.GetAsync(stepContext.Context, () => new User(), cancellationToken);
+			var processDetails = new ProcessDetails
+			{ User = _user };
+
 			//var option = (FoundChoice)stepContext.Result;
 			var resultType = stepContext.Result.GetType();
 			if (resultType == typeof(FoundChoice))

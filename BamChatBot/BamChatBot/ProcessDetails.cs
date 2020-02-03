@@ -8,7 +8,7 @@ namespace BamChatBot
 {
     public class ProcessDetails
     {
-        public string UserName { get; set; }
+        public User User { get; set; }
         public List<ProcessModel> Processes { get; set; }
         public ProcessModel ProcessSelected { get; set; }
         public string Action { get; set; }

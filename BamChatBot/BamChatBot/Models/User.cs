@@ -19,7 +19,7 @@ namespace BamChatBot.Models
         internal User GetUser()
         {
             var rpaService = new RPAService();
-            var result = rpaService.GetApiResult("getUser");
+            var result = rpaService.GetApiResult("getUser", "");
             var user = JsonConvert.DeserializeObject<User>(result.Content);
           /*  var user = new User();
             //get user first name  
@@ -64,7 +64,7 @@ namespace BamChatBot.Models
 		internal void GetUserProcess(ProcessDetails processDetails)
 		{
 			var rpaService = new RPAService();
-			var result = rpaService.GetApiResult("userProcesses");
+			var result = rpaService.GetApiResult("userProcesses", processDetails.User.UserId);
 			if (!result.IsSuccess)
 			{
 				processDetails.Error = JsonConvert.DeserializeObject<ProcessModel>(result.Content).Error;

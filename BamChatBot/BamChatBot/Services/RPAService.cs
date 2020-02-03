@@ -41,14 +41,14 @@ namespace BamChatBot.Services
 			client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", credentials);
 		}
 
-		internal APIResponse GetApiResult(string endPoint)
+		internal APIResponse GetApiResult(string endPoint, string  userId)
 		{
 			var user = new User();
 			//get user first name  
 			var apiPath = GetApiPath();
 			var url = apiPath + endPoint;
 			var userName = user.GetLoginUserName();
-			var urlParameters = "?user_name="+ userName;
+			var urlParameters = "?user_name="+ userId;
 
 			HttpClient client = new HttpClient();
 			client.BaseAddress = new Uri(url);
