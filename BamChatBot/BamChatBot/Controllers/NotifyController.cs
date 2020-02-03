@@ -51,7 +51,7 @@ namespace BamChatBot.Controllers
 				conversationReferenceActivityIds.Add(conversationReference.ActivityId);
 				if (conversationReference.ActivityId == processStatus.ActivityId)
                 {
-				await ((BotAdapter)_adapter).ContinueConversationAsync(_appId, conversationReference, BotCallback, default(CancellationToken));
+				    await ((BotAdapter)_adapter).ContinueConversationAsync(_appId, conversationReference, BotCallback, default(CancellationToken));
 					break;
 				}
 				

@@ -6,6 +6,7 @@
 using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
+using BamChatBot.Models;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Schema;
@@ -39,11 +40,11 @@ namespace BamChatBot.Bots
 
         public override async Task OnTurnAsync(ITurnContext turnContext, CancellationToken cancellationToken = default(CancellationToken))
         {
-            //This calls the rigth handler based on the type of activity received.
-            await base.OnTurnAsync(turnContext, cancellationToken);
-           
-            // Save any state changes that might have occured during the turn.
-            await ConversationState.SaveChangesAsync(turnContext, false, cancellationToken);
+			//This calls the rigth handler based on the type of activity received.
+			await base.OnTurnAsync(turnContext, cancellationToken);
+		
+			// Save any state changes that might have occured during the turn.
+			await ConversationState.SaveChangesAsync(turnContext, false, cancellationToken);
             await UserState.SaveChangesAsync(turnContext, false, cancellationToken);
         }
 
@@ -55,6 +56,7 @@ namespace BamChatBot.Bots
 
         protected override Task OnConversationUpdateActivityAsync(ITurnContext<IConversationUpdateActivity> turnContext, CancellationToken cancellationToken)
         {
+			
             AddConversationReference(turnContext.Activity as Activity);
 
             return base.OnConversationUpdateActivityAsync(turnContext, cancellationToken);
@@ -63,7 +65,8 @@ namespace BamChatBot.Bots
 
         protected override async Task OnMessageActivityAsync(ITurnContext<IMessageActivity> turnContext, CancellationToken cancellationToken)
         {
-            AddConversationReference(turnContext.Activity as Activity);
+			
+			AddConversationReference(turnContext.Activity as Activity);
 
             Logger.LogInformation("Running dialog with Message Activity.");
            

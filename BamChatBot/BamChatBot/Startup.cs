@@ -37,13 +37,13 @@ namespace BamChatBot
             services.AddSingleton<ConversationState>();
 
             // Register LUIS recognizer
-            services.AddSingleton<FlightBookingRecognizer>();
+           // services.AddSingleton<FlightBookingRecognizer>();
 
             // Register LUIS recognizer
             services.AddSingleton<ProcessRecognizer>(); 
 
             // Register the BookingDialog.
-            services.AddSingleton<BookingDialog>();
+           // services.AddSingleton<BookingDialog>();
 
             // Register the ProcessDialog.
             services.AddSingleton<ProcessDialog>();

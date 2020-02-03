@@ -3,7 +3,9 @@
 //
 // Generated with Bot Builder V4 SDK Template for Visual Studio CoreBot v4.6.2
 
+using System.Net;
 using System.Threading.Tasks;
+using BamChatBot.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Integration.AspNet.Core;
@@ -19,8 +21,9 @@ namespace BamChatBot.Controllers
     {
         private readonly IBotFrameworkHttpAdapter Adapter;
         private readonly IBot Bot;
+		
 
-        public BotController(IBotFrameworkHttpAdapter adapter, IBot bot)
+		public BotController(IBotFrameworkHttpAdapter adapter, IBot bot)
         {
             Adapter = adapter;
             Bot = bot;
@@ -29,9 +32,11 @@ namespace BamChatBot.Controllers
         [HttpPost, HttpGet]
         public async Task PostAsync()
         {
-            // Delegate the processing of the HTTP POST to the adapter.
-            // The adapter will invoke the bot.
-            await Adapter.ProcessAsync(Request, Response, Bot);
+			
+			// Delegate the processing of the HTTP POST to the adapter.
+			// The adapter will invoke the bot.
+			await Adapter.ProcessAsync(Request, Response, Bot);
+			
         }
     }
 }

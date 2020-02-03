@@ -21,10 +21,15 @@ namespace BamChatBot.Bots
 	public class DialogAndWelcomeBot<T> : DialogBot<T>
     where T : Dialog
 {
-    public DialogAndWelcomeBot(ConversationState conversationState, UserState userState, T dialog, ILogger<DialogBot<T>> logger, ConcurrentDictionary<string, ConversationReference> conversationReferences)
+		protected readonly BotState UserState;
+		private readonly IStatePropertyAccessor<User> _userAccessor;
+
+		public DialogAndWelcomeBot(ConversationState conversationState, UserState userState, T dialog, ILogger<DialogBot<T>> logger, ConcurrentDictionary<string, ConversationReference> conversationReferences)
         : base(conversationState, userState, dialog, logger, conversationReferences)
     {
-    }
+			UserState = userState;
+			_userAccessor = userState.CreateProperty<User>("User");
+		}
 
     protected override async Task OnMembersAddedAsync(IList<ChannelAccount> membersAdded, ITurnContext<IConversationUpdateActivity> turnContext, CancellationToken cancellationToken)
     {
@@ -34,9 +39,12 @@ namespace BamChatBot.Bots
             // To learn more about Adaptive Cards, see https://aka.ms/msbot-adaptivecards for morBe details.
             if (member.Id != turnContext.Activity.Recipient.Id)
             {
-                    var user = new User();
-                   var _user = user.GetUser();
-                    if (!string.IsNullOrWhiteSpace(_user.UserId))
+					
+					var user = new User();
+                    //var _user = user.GetUser();
+					var _user = await _userAccessor.GetAsync(turnContext, () => new User(), cancellationToken);
+					
+					if (!string.IsNullOrWhiteSpace(_user.UserId))
                     {
                         await turnContext.SendActivityAsync(MessageFactory.Text("Hello "+_user.Name+", welcome to Bayview ChatBot!"), cancellationToken);
                         await turnContext.SendActivityAsync(MessageFactory.Text("What can I help you with today?"), cancellationToken);
