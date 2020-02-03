@@ -44,7 +44,7 @@ namespace BamChatBot.Controllers
 		{
 			/*var _userAccessor = ((DialogAndWelcomeBot<MainDialog>)_bot)._userAccessor;
 			await _adapter.ProcessAsync(Request, Response, _bot);*/
-			_user = user;
+			//_user = user;
 			
 			/*var conversationReference = new ConversationReference
 			{
@@ -63,7 +63,7 @@ namespace BamChatBot.Controllers
 			//await _adapter.ProcessAsync(Request, Response, _bot);
 			return  new ContentResult()
 			{
-				Content = "<html><body><h1>User " + user.Name + " " + _conversationReferences.Values.Count+" has joined.</h1></body></html>",
+				Content = "<html><body><h1>User " +user.Name+ " " + _conversationReferences.Values.Count+" has joined.</h1></body></html>",
 				ContentType = "text/html",
 				StatusCode = (int)HttpStatusCode.OK,
 			};
@@ -78,7 +78,8 @@ namespace BamChatBot.Controllers
 			// https://aka.ms/BotTrustServiceUrl
 			MicrosoftAppCredentials.TrustServiceUrl(serviceUrl);
 
-			var userStateAccessors = UserState.CreateProperty<User>(nameof(User));
+			//var userStateAccessors = UserState.CreateProperty<User>(nameof(User));
+			var userStateAccessors = ((DialogAndWelcomeBot<MainDialog>)_bot)._userAccessor;
 			var user = await userStateAccessors.GetAsync(turnContext, () => new User());
 			user.Name = _user.Name;
 			user.UserId = _user.UserId;
