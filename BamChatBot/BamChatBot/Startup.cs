@@ -14,6 +14,7 @@ using BamChatBot.Bots;
 using BamChatBot.Dialogs;
 using System.Collections.Concurrent;
 using Microsoft.Bot.Schema;
+using BamChatBot.Models;
 
 namespace BamChatBot
 {
@@ -54,6 +55,7 @@ namespace BamChatBot
             // Create a global hashset for our ConversationReferences
             services.AddSingleton<ConcurrentDictionary<string, ConversationReference>>();
 
+			
             // Create the bot as a transient. In this case the ASP Controller is expecting an IBot.
             services.AddTransient<IBot, DialogAndWelcomeBot<MainDialog>>();
 

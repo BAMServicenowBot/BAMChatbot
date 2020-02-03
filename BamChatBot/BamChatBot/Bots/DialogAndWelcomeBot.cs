@@ -22,7 +22,7 @@ namespace BamChatBot.Bots
     where T : Dialog
 {
 		protected readonly BotState UserState;
-		private readonly IStatePropertyAccessor<User> _userAccessor;
+		public readonly IStatePropertyAccessor<User> _userAccessor;
 
 		public DialogAndWelcomeBot(ConversationState conversationState, UserState userState, T dialog, ILogger<DialogBot<T>> logger, ConcurrentDictionary<string, ConversationReference> conversationReferences)
         : base(conversationState, userState, dialog, logger, conversationReferences)
@@ -51,7 +51,7 @@ namespace BamChatBot.Bots
                     }
                     else
                     {
-                       await turnContext.SendActivityAsync(MessageFactory.Text(_user.Error), cancellationToken);
+                       await turnContext.SendActivityAsync(MessageFactory.Text(_user.Name), cancellationToken);
                     }
             }
                

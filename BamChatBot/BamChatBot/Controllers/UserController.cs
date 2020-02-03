@@ -5,6 +5,8 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using BamChatBot.Bots;
+using BamChatBot.Dialogs;
 using BamChatBot.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Bot.Builder;
@@ -40,7 +42,10 @@ namespace BamChatBot.Controllers
 		[HttpPost]
 		public async Task<IActionResult> Post([FromBody]  User user)
 		{
+			/*var _userAccessor = ((DialogAndWelcomeBot<MainDialog>)_bot)._userAccessor;
+			await _adapter.ProcessAsync(Request, Response, _bot);*/
 			_user = user;
+			
 			/*var conversationReference = new ConversationReference
 			{
 				ActivityId = "",
@@ -52,19 +57,21 @@ namespace BamChatBot.Controllers
 			};*/
 			foreach (var conversationReference in _conversationReferences.Values)
 			{
-					await ((BotAdapter)_adapter).ContinueConversationAsync(_appId, conversationReference, BotCallback, default(CancellationToken));
+			  await ((BotAdapter)_adapter).ContinueConversationAsync(_appId, conversationReference, BotCallback, default(CancellationToken));
 			}
-			
+
 			//await _adapter.ProcessAsync(Request, Response, _bot);
 			return  new ContentResult()
 			{
-				Content = "<html><body><h1>User " + user.Name + " has joined.</h1></body></html>",
+				Content = "<html><body><h1>User " + user.Name + " " + _conversationReferences.Values.Count+" has joined.</h1></body></html>",
 				ContentType = "text/html",
 				StatusCode = (int)HttpStatusCode.OK,
 			};
 		}
 
-		private async Task BotCallback(ITurnContext turnContext, CancellationToken cancellationToken)
+		
+
+			private async Task BotCallback(ITurnContext turnContext, CancellationToken cancellationToken)
 		{
 			var serviceUrl = turnContext.Activity.ServiceUrl;
 			// If you encounter permission-related errors when sending this message, see
@@ -76,6 +83,7 @@ namespace BamChatBot.Controllers
 			user.Name = _user.Name;
 			user.UserId = _user.UserId;
 			await userStateAccessors.SetAsync(turnContext, user, cancellationToken);
+			await UserState.SaveChangesAsync(turnContext, false, cancellationToken);
 		}
 	}
 }
