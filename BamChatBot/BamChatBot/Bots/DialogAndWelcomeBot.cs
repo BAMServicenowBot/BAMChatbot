@@ -68,6 +68,11 @@ namespace BamChatBot.Bots
 					}
 					await turnContext.SendActivityAsync(MessageFactory.Text(msg), cancellationToken);
 					await turnContext.SendActivityAsync(MessageFactory.Text("What can I help you with today?"), cancellationToken);
+					if (turnContext.Activity.Type == ActivityTypes.Event)
+					{
+						var uparam = turnContext.Activity.From.Properties["userparam"].ToString();
+						await turnContext.SendActivityAsync($"Parameter that you sent is '{uparam}'");
+					}
 				}
                
         }
