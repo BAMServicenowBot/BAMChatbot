@@ -48,7 +48,7 @@ namespace BamChatBot.Services
 			var apiPath = GetApiPath();
 			var url = apiPath + endPoint;
 			var userName = user.GetLoginUserName();
-			var urlParameters = "?user_name="+ userId;
+			var urlParameters = "?sys_user=" + userId;
 
 			HttpClient client = new HttpClient();
 			client.BaseAddress = new Uri(url);

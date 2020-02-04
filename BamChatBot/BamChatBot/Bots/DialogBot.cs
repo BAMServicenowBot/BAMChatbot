@@ -28,14 +28,16 @@ namespace BamChatBot.Bots
         protected readonly ILogger Logger;
 		// Dependency injected dictionary for storing ConversationReference objects used in NotifyController to proactively message users
 		protected ConcurrentDictionary<string, ConversationReference> _conversationReferences;
+		public readonly User _user;
 
-        public DialogBot(ConversationState conversationState, UserState userState, T dialog, ILogger<DialogBot<T>> logger, ConcurrentDictionary<string, ConversationReference> conversationReferences)
+        public DialogBot(ConversationState conversationState, UserState userState, T dialog, ILogger<DialogBot<T>> logger, ConcurrentDictionary<string, ConversationReference> conversationReferences, User user)
         {
             ConversationState = conversationState;
             UserState = userState;
             Dialog = dialog;
             Logger = logger;
             _conversationReferences = conversationReferences;
+			_user = user;
         }
 
         public override async Task OnTurnAsync(ITurnContext turnContext, CancellationToken cancellationToken = default(CancellationToken))

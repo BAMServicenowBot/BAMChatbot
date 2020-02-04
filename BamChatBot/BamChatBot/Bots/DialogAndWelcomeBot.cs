@@ -24,30 +24,38 @@ namespace BamChatBot.Bots
 		protected readonly BotState UserState;
 		public readonly IStatePropertyAccessor<User> _userAccessor;
 
-		public DialogAndWelcomeBot(ConversationState conversationState, UserState userState, T dialog, ILogger<DialogBot<T>> logger, ConcurrentDictionary<string, ConversationReference> conversationReferences)
-        : base(conversationState, userState, dialog, logger, conversationReferences)
-    {
+		public DialogAndWelcomeBot(ConversationState conversationState, UserState userState, T dialog, ILogger<DialogBot<T>> logger, ConcurrentDictionary<string, ConversationReference> conversationReferences, User user)
+        : base(conversationState, userState, dialog, logger, conversationReferences, user)
+        {
 			UserState = userState;
 			_userAccessor = userState.CreateProperty<User>("User");
 		}
 
     protected override async Task OnMembersAddedAsync(IList<ChannelAccount> membersAdded, ITurnContext<IConversationUpdateActivity> turnContext, CancellationToken cancellationToken)
     {
-
+		
 		foreach (var member in membersAdded)
         {
             // Greet anyone that was not the target (recipient) of this message.
             // To learn more about Adaptive Cards, see https://aka.ms/msbot-adaptivecards for morBe details.
             if (member.Id != turnContext.Activity.Recipient.Id)
             {
-					this.AddConversationReference(turnContext.Activity as Activity);		
 					var user = new User();
+					if (!string.IsNullOrEmpty(this._user.UserId))
+					{
+						user = user.GetUser(this._user.UserId);
+						var cacheUser = await this._userAccessor.GetAsync(turnContext, () => new User());
+						cacheUser.Name = user.Name;
+						cacheUser.UserId = user.UserId;
+						await this._userAccessor.SetAsync(turnContext, cacheUser, cancellationToken);
+					}
+					this.AddConversationReference(turnContext.Activity as Activity);		
+					
                     //var _user = user.GetUser();
-					var _user = await _userAccessor.GetAsync(turnContext, () => new User(), cancellationToken);
 					var msg = string.Empty;
-					if (!string.IsNullOrWhiteSpace(_user.UserId))
+					if (!string.IsNullOrWhiteSpace(user.UserId))
                     {
-						msg = "Hello " + _user.Name + ", welcome to Bayview ChatBot!";
+						msg = "Hello " + user.Name + ", welcome to Bayview ChatBot!";
 						
 					}
                     else

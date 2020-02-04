@@ -15,11 +15,12 @@ namespace BamChatBot.Models
         public string UserId { get; set; }
         public string Name { get; set; }
         public string Error { get; set; }
+		
 
-        internal User GetUser()
+		internal User GetUser(string userId)
         {
             var rpaService = new RPAService();
-            var result = rpaService.GetApiResult("getUser", "");
+            var result = rpaService.GetApiResult("getUser", userId);
             var user = JsonConvert.DeserializeObject<User>(result.Content);
           /*  var user = new User();
             //get user first name  
