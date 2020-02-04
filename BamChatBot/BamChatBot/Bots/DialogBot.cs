@@ -29,8 +29,9 @@ namespace BamChatBot.Bots
 		// Dependency injected dictionary for storing ConversationReference objects used in NotifyController to proactively message users
 		protected ConcurrentDictionary<string, ConversationReference> _conversationReferences;
 		public readonly User _user;
+		public readonly IStatePropertyAccessor<User> _userAccessor;
 
-        public DialogBot(ConversationState conversationState, UserState userState, T dialog, ILogger<DialogBot<T>> logger, ConcurrentDictionary<string, ConversationReference> conversationReferences, User user)
+		public DialogBot(ConversationState conversationState, UserState userState, T dialog, ILogger<DialogBot<T>> logger, ConcurrentDictionary<string, ConversationReference> conversationReferences, User user)
         {
             ConversationState = conversationState;
             UserState = userState;
@@ -38,7 +39,8 @@ namespace BamChatBot.Bots
             Logger = logger;
             _conversationReferences = conversationReferences;
 			_user = user;
-        }
+			_userAccessor = userState.CreateProperty<User>("User");
+		}
 
         public override async Task OnTurnAsync(ITurnContext turnContext, CancellationToken cancellationToken = default(CancellationToken))
         {
@@ -80,8 +82,13 @@ namespace BamChatBot.Bots
         {
 			if (turnContext.Activity.Type == ActivityTypes.Event)
 			{
-				var uparam = turnContext.Activity.From.Properties["userparam"].ToString();
-				await turnContext.SendActivityAsync($"Parameter that you sent is '{uparam}'");
+				var user = new User();
+				var userId = turnContext.Activity.From.Properties["userparam"].ToString();
+				user = user.GetUser(userId);
+				var cacheUser = await this._userAccessor.GetAsync(turnContext, () => new User());
+				cacheUser.Name = user.Name;
+				cacheUser.UserId = user.UserId;
+				await this._userAccessor.SetAsync(turnContext, cacheUser, cancellationToken);
 			}
 		}
     }
