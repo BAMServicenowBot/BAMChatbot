@@ -78,7 +78,11 @@ namespace BamChatBot.Bots
 
         protected override async Task OnEventActivityAsync(ITurnContext<IEventActivity> turnContext, CancellationToken cancellationToken)
         {
-
-        }
+			if (turnContext.Activity.Type == ActivityTypes.Event)
+			{
+				var uparam = turnContext.Activity.From.Properties["userparam"].ToString();
+				await turnContext.SendActivityAsync($"Parameter that you sent is '{uparam}'");
+			}
+		}
     }
 }
