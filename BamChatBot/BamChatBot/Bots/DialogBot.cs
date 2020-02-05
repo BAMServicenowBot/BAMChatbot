@@ -58,18 +58,29 @@ namespace BamChatBot.Bots
             _conversationReferences.AddOrUpdate(conversationReference.User.Id, conversationReference, (key, newValue) => conversationReference);
         }
 
-        protected override Task OnConversationUpdateActivityAsync(ITurnContext<IConversationUpdateActivity> turnContext, CancellationToken cancellationToken)
+        protected override async Task OnConversationUpdateActivityAsync(ITurnContext<IConversationUpdateActivity> turnContext, CancellationToken cancellationToken)
         {
+			AddConversationReference(turnContext.Activity as Activity);
+			//test
 			
-            AddConversationReference(turnContext.Activity as Activity);
+				/*var user = new User();
+			//get params sent from SN
+			var userId = "f8e33eb11b94b384dbc4c91e1e4bcb9b";
+			user = user.GetUser(userId);
+			//get the user saved in cache
+			var cacheUser = await this._userAccessor.GetAsync(turnContext, () => new User());
+			//set the values got from SN
+			cacheUser.Name = user.Name;
+			cacheUser.UserId = user.UserId;
+			await this._userAccessor.SetAsync(turnContext, cacheUser, cancellationToken);*/
+			//end test
 
-            return base.OnConversationUpdateActivityAsync(turnContext, cancellationToken);
+			await base.OnConversationUpdateActivityAsync(turnContext, cancellationToken);
         }
 
 
         protected override async Task OnMessageActivityAsync(ITurnContext<IMessageActivity> turnContext, CancellationToken cancellationToken)
         {
-			
 			AddConversationReference(turnContext.Activity as Activity);
 
             Logger.LogInformation("Running dialog with Message Activity.");
@@ -83,9 +94,12 @@ namespace BamChatBot.Bots
 			if (turnContext.Activity.Type == ActivityTypes.Event)
 			{
 				var user = new User();
+				//get params sent from SN
 				var userId = turnContext.Activity.From.Properties["userparam"].ToString();
 				user = user.GetUser(userId);
+				//get the user saved in cache
 				var cacheUser = await this._userAccessor.GetAsync(turnContext, () => new User());
+				//set the values got from SN
 				cacheUser.Name = user.Name;
 				cacheUser.UserId = user.UserId;
 				await this._userAccessor.SetAsync(turnContext, cacheUser, cancellationToken);

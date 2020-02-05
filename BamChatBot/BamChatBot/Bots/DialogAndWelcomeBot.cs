@@ -3,6 +3,7 @@
 //
 // Generated with Bot Builder V4 SDK Template for Visual Studio CoreBot v4.6.2
 
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
@@ -21,34 +22,29 @@ namespace BamChatBot.Bots
 	public class DialogAndWelcomeBot<T> : DialogBot<T>
     where T : Dialog
 {
-		protected readonly BotState UserState;
-		public readonly IStatePropertyAccessor<User> _userAccessor;
 
 		public DialogAndWelcomeBot(ConversationState conversationState, UserState userState, T dialog, ILogger<DialogBot<T>> logger, ConcurrentDictionary<string, ConversationReference> conversationReferences, User user)
         : base(conversationState, userState, dialog, logger, conversationReferences, user)
         {
-			UserState = userState;
-			_userAccessor = userState.CreateProperty<User>("User");
 		}
 
     protected override async Task OnMembersAddedAsync(IList<ChannelAccount> membersAdded, ITurnContext<IConversationUpdateActivity> turnContext, CancellationToken cancellationToken)
     {
-		
 		foreach (var member in membersAdded)
         {
             // Greet anyone that was not the target (recipient) of this message.
             // To learn more about Adaptive Cards, see https://aka.ms/msbot-adaptivecards for morBe details.
             if (member.Id != turnContext.Activity.Recipient.Id)
             {
-					var user = new User();
-					if (!string.IsNullOrEmpty(this._user.UserId))
+					var user = await this._userAccessor.GetAsync(turnContext, () => new User());
+					/*if (!string.IsNullOrEmpty(this._user.UserId))
 					{
 						user = user.GetUser(this._user.UserId);
 						var cacheUser = await this._userAccessor.GetAsync(turnContext, () => new User());
 						cacheUser.Name = user.Name;
 						cacheUser.UserId = user.UserId;
 						await this._userAccessor.SetAsync(turnContext, cacheUser, cancellationToken);
-					}
+					}*/
 					this.AddConversationReference(turnContext.Activity as Activity);		
 					
                     //var _user = user.GetUser();
@@ -56,19 +52,12 @@ namespace BamChatBot.Bots
 					if (!string.IsNullOrWhiteSpace(user.UserId))
                     {
 						msg = "Hello " + user.Name + ", welcome to Bayview ChatBot!";
-						
 					}
                     else
                     {
-						/*user.Name = "Dayamis Ruiz";
-						user.UserId = "f8e33eb11b94b384dbc4c91e1e4bcb9b";
-						await _userAccessor.SetAsync(turnContext, user, cancellationToken);*/
 						msg = "Welcome to Bayview ChatBot!";
-						// await turnContext.SendActivityAsync(MessageFactory.Text(_user.Name), cancellationToken);
 					}
-					await turnContext.SendActivityAsync(MessageFactory.Text(msg), cancellationToken);
-					await turnContext.SendActivityAsync(MessageFactory.Text("What can I help you with today?"), cancellationToken);
-					
+					await turnContext.SendActivityAsync(MessageFactory.Text(msg+ Environment.NewLine+ "What can I help you with today?"), cancellationToken);
 				}
                
         }

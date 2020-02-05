@@ -23,10 +23,6 @@ namespace BamChatBot.Dialogs
 				IntroStepAsync,
 				ShowProcessStepAsync,
 				StartProcessStepAsync
-				/*ProcessSelectedProcessStepAsync,
-				ExecuteActionStepAsync,
-				ContactRPASpport
-               // FinalStepAsync,*/
             }));
 
 			// The initial child Dialog to run.
@@ -95,7 +91,6 @@ namespace BamChatBot.Dialogs
 			}
 			else//there was an error
 			{
-
 				return await stepContext.PromptAsync(nameof(ChoicePrompt), new PromptOptions
 				{
 					Prompt = MessageFactory.Text("To continue to run this bot, please contact RPA Support. "),

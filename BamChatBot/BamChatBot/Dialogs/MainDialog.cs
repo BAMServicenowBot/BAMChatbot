@@ -249,7 +249,9 @@ namespace BamChatBot.Dialogs
         {
 			var _user = await _userAccessor.GetAsync(stepContext.Context, () => new User(), cancellationToken);
 			var processDetails = new ProcessDetails
-			{ User = _user };
+			{
+				User = _user
+			};
 
 			//var option = (FoundChoice)stepContext.Result;
 			var resultType = stepContext.Result.GetType();

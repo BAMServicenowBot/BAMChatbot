@@ -79,7 +79,7 @@ namespace BamChatBot.Dialogs
 				}
 				else
 				{
-					msg = "Process " + processDetails.ProcessSelected.Name + " has been stopped sucessfully";
+					msg = "Process " + processDetails.ProcessSelected.Name + " has been stopped sucessfully.";
 				}
 			}
 			else

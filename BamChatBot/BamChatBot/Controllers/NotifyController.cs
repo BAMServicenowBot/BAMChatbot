@@ -63,7 +63,7 @@ namespace BamChatBot.Controllers
 			// Let the caller know proactive messages have been sent
 			return new ContentResult()
             {
-                Content = "<html><body><h1>Process "+ message + " has finished.</h1></body></html>",
+                Content = "<html><body><h1>Process has finished. Activities: "+string.Join(",", conversationReferenceActivityIds )+"Activity from SN "+ processStatus.ActivityId +"</h1></body></html>",
                 ContentType = "text/html",
                 StatusCode = (int)HttpStatusCode.OK,
             };
