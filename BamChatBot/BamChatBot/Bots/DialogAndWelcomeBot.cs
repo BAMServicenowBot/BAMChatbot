@@ -24,7 +24,7 @@ namespace BamChatBot.Bots
 {
 
 		public DialogAndWelcomeBot(ConversationState conversationState, UserState userState, T dialog, ILogger<DialogBot<T>> logger, ConcurrentDictionary<string, ConversationReference> conversationReferences, User user)
-        : base(conversationState, userState, dialog, logger, conversationReferences, user)
+        : base(conversationState, userState, dialog, logger, conversationReferences)
         {
 		}
 

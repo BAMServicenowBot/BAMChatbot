@@ -28,17 +28,16 @@ namespace BamChatBot.Bots
         protected readonly ILogger Logger;
 		// Dependency injected dictionary for storing ConversationReference objects used in NotifyController to proactively message users
 		protected ConcurrentDictionary<string, ConversationReference> _conversationReferences;
-		public readonly User _user;
+		public User _user;
 		public readonly IStatePropertyAccessor<User> _userAccessor;
 
-		public DialogBot(ConversationState conversationState, UserState userState, T dialog, ILogger<DialogBot<T>> logger, ConcurrentDictionary<string, ConversationReference> conversationReferences, User user)
+		public DialogBot(ConversationState conversationState, UserState userState, T dialog, ILogger<DialogBot<T>> logger, ConcurrentDictionary<string, ConversationReference> conversationReferences)
         {
             ConversationState = conversationState;
             UserState = userState;
             Dialog = dialog;
             Logger = logger;
             _conversationReferences = conversationReferences;
-			_user = user;
 			_userAccessor = userState.CreateProperty<User>("User");
 		}
 
@@ -99,6 +98,7 @@ namespace BamChatBot.Bots
 				//get params sent from SN
 				var userId = turnContext.Activity.From.Properties["userparam"].ToString();
 				user = user.GetUser(userId);
+				this._user = user;
 				//get the user saved in cache
 				var cacheUser = await this._userAccessor.GetAsync(turnContext, () => new User());
 				//set the values got from SN
