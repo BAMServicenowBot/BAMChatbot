@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using BamChatBot.Bots;
+using BamChatBot.Dialogs;
 using BamChatBot.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Bot.Builder;
@@ -44,12 +46,14 @@ namespace BamChatBot.Controllers
         public async Task<IActionResult> Post([FromBody]  ProcessStatus processStatus)
         {
 			_processStatus = processStatus;
+			var user = ((DialogBot<MainDialog>)_bot)._user;
 			var conversationReferenceActivityIds = new List<string>();
 
 			foreach (var conversationReference in _conversationReferences.Values)
             {
-				conversationReferenceActivityIds.Add(conversationReference.ActivityId);
-				if (conversationReference.ActivityId == processStatus.ActivityId)
+				conversationReferenceActivityIds.Add(user.UserId);
+				//if (conversationReference.ActivityId == processStatus.ActivityId)
+				if(user.UserId == processStatus.ChatbotUser)
                 {
 				    await ((BotAdapter)_adapter).ContinueConversationAsync(_appId, conversationReference, BotCallback, default(CancellationToken));
 					break;
@@ -63,7 +67,7 @@ namespace BamChatBot.Controllers
 			// Let the caller know proactive messages have been sent
 			return new ContentResult()
             {
-                Content = "<html><body><h1>Process has finished. Activities: "+string.Join(",", conversationReferenceActivityIds )+"Activity from SN "+ processStatus.ActivityId +"</h1></body></html>",
+                Content = "<html><body><h1>Process has finished. User: "+string.Join(",", conversationReferenceActivityIds )+"User from SN "+ processStatus.ChatbotUser +"</h1></body></html>",
                 ContentType = "text/html",
                 StatusCode = (int)HttpStatusCode.OK,
             };

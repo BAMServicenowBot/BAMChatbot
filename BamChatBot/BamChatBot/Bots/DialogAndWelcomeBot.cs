@@ -45,7 +45,6 @@ namespace BamChatBot.Bots
 						cacheUser.UserId = user.UserId;
 						await this._userAccessor.SetAsync(turnContext, cacheUser, cancellationToken);
 					}*/
-					this.AddConversationReference(turnContext.Activity as Activity);		
 					
                     //var _user = user.GetUser();
 					var msg = string.Empty;

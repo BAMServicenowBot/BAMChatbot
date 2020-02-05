@@ -89,7 +89,7 @@ namespace BamChatBot.Services
 			var url = apiPath + "startProcess";
 			HttpClient client = new HttpClient();
 			client.BaseAddress = new Uri(url);
-			var urlParameters = "?user=" + data.UserId + "&sys_id=" + data.Sys_id + "&activity=" + activityId;
+			var urlParameters = "?user=" + data.UserId + "&sys_id=" + data.Sys_id;// + "&activity=" + activityId;
 			//add basic authorization
 			AddAuthorization(client);
 

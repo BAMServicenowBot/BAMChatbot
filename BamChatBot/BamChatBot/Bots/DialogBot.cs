@@ -60,7 +60,6 @@ namespace BamChatBot.Bots
 
         protected override async Task OnConversationUpdateActivityAsync(ITurnContext<IConversationUpdateActivity> turnContext, CancellationToken cancellationToken)
         {
-			AddConversationReference(turnContext.Activity as Activity);
 			//test
 			
 				/*var user = new User();
@@ -81,9 +80,12 @@ namespace BamChatBot.Bots
 
         protected override async Task OnMessageActivityAsync(ITurnContext<IMessageActivity> turnContext, CancellationToken cancellationToken)
         {
-			AddConversationReference(turnContext.Activity as Activity);
+			if(turnContext.Activity.Text == "Start Process")
+			{
+				AddConversationReference(turnContext.Activity as Activity);
+			}
 
-            Logger.LogInformation("Running dialog with Message Activity.");
+			Logger.LogInformation("Running dialog with Message Activity.");
            
             // Run the Dialog with the new message Activity.
             await Dialog.RunAsync(turnContext, ConversationState.CreateProperty<DialogState>("DialogState"), cancellationToken);

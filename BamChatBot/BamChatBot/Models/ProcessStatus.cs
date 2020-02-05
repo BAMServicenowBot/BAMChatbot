@@ -11,7 +11,7 @@ namespace BamChatBot.Models
         public string Release { get; set; }
         public DateTime? Start { get; set; }
         public DateTime? End { get; set; }
-        public string ActivityId { get; set; }
+        public string ChatbotUser { get; set; }
 		public string Process { get; set; }
 	}
 }
