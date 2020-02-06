@@ -44,9 +44,11 @@ namespace BamChatBot.Bots
 
         public override async Task OnTurnAsync(ITurnContext turnContext, CancellationToken cancellationToken = default(CancellationToken))
         {
+			this._user = await this._userAccessor.GetAsync(turnContext, () => new User());
+
 			//This calls the rigth handler based on the type of activity received.
 			await base.OnTurnAsync(turnContext, cancellationToken);
-		
+
 			// Save any state changes that might have occured during the turn.
 			await ConversationState.SaveChangesAsync(turnContext, false, cancellationToken);
             await UserState.SaveChangesAsync(turnContext, false, cancellationToken);
@@ -62,16 +64,17 @@ namespace BamChatBot.Bots
         {
 			//test
 			
-				/*var user = new User();
+			var user = new User();
 			//get params sent from SN
 			var userId = "f8e33eb11b94b384dbc4c91e1e4bcb9b";
 			user = user.GetUser(userId);
+			this._user = user;
 			//get the user saved in cache
 			var cacheUser = await this._userAccessor.GetAsync(turnContext, () => new User());
 			//set the values got from SN
 			cacheUser.Name = user.Name;
 			cacheUser.UserId = user.UserId;
-			await this._userAccessor.SetAsync(turnContext, cacheUser, cancellationToken);*/
+			await this._userAccessor.SetAsync(turnContext, cacheUser, cancellationToken);
 			//end test
 
 			await base.OnConversationUpdateActivityAsync(turnContext, cancellationToken);

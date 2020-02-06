@@ -48,10 +48,10 @@ namespace BamChatBot.Controllers
 			_processStatus = processStatus;
 			var user = ((DialogBot<MainDialog>)_bot)._user;
 			var conversationReferenceActivityIds = new List<string>();
+			conversationReferenceActivityIds.Add(user.UserId);
 
 			foreach (var conversationReference in _conversationReferences.Values)
             {
-				conversationReferenceActivityIds.Add(user.UserId);
 				//if (conversationReference.ActivityId == processStatus.ActivityId)
 				if(user.UserId == processStatus.ChatbotUser)
                 {
@@ -67,7 +67,7 @@ namespace BamChatBot.Controllers
 			// Let the caller know proactive messages have been sent
 			return new ContentResult()
             {
-                Content = "<html><body><h1>Process has finished. User: "+string.Join(",", conversationReferenceActivityIds )+"User from SN "+ processStatus.ChatbotUser +"</h1></body></html>",
+                Content = "<html><body><h1>Process has finished. User: "+string.Join(",", conversationReferenceActivityIds )+"User from SN "+ processStatus.ChatbotUser +"Conversation "+ _conversationReferences.Values.Count+"</h1></body></html>",
                 ContentType = "text/html",
                 StatusCode = (int)HttpStatusCode.OK,
             };
