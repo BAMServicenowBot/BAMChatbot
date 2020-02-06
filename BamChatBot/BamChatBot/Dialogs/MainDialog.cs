@@ -94,7 +94,7 @@ namespace BamChatBot.Dialogs
             }
             else//first interaction
             {
-                return await stepContext.NextAsync(null, cancellationToken);
+				return await stepContext.NextAsync(null, cancellationToken);
             }
 
         }

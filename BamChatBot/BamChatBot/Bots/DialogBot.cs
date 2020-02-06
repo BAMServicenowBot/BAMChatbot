@@ -107,6 +107,7 @@ namespace BamChatBot.Bots
 				cacheUser.Name = user.Name;
 				cacheUser.UserId = user.UserId;
 				await this._userAccessor.SetAsync(turnContext, cacheUser, cancellationToken);
+				await turnContext.SendActivityAsync(MessageFactory.Text("You sent param "+userId),cancellationToken);
 			}
 		}
     }

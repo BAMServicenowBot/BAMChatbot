@@ -87,7 +87,21 @@ namespace BamChatBot.Controllers
 				var message = MessageFactory.Text("Process " + _processStatus.Process + " has finished with following status." + Environment.NewLine +
 				"Status: " + _processStatus.State + Environment.NewLine +
 				"Start Time: " + _processStatus.Start + Environment.NewLine +
-				"End Time: " + _processStatus.End);
+				"End Time: " + _processStatus.End+Environment.NewLine+"To continue");
+				message.SuggestedActions = new SuggestedActions
+				{
+					Actions = new List<CardAction>
+					{
+						new CardAction()
+						{
+							Value = "continue",
+							Type = ActionTypes.PostBack,
+							Title = "Click Here",
+							Text = "Click Here",
+							DisplayText = "Click Here"
+						}
+					}
+				};
 				await turnContext.SendActivityAsync(message);
 			}
         }
