@@ -31,7 +31,7 @@ namespace BamChatBot.Bots
 		public User _user;
 		public readonly IStatePropertyAccessor<User> _userAccessor;
 
-		public DialogBot(ConversationState conversationState, UserState userState, T dialog, ILogger<DialogBot<T>> logger, ConcurrentDictionary<string, ConversationReference> conversationReferences)
+		public DialogBot(ConversationState conversationState, UserState userState, T dialog, ILogger<DialogBot<T>> logger, ConcurrentDictionary<string, ConversationReference> conversationReferences, User user)
         {
             ConversationState = conversationState;
             UserState = userState;
@@ -39,6 +39,7 @@ namespace BamChatBot.Bots
             Logger = logger;
             _conversationReferences = conversationReferences;
 			_userAccessor = userState.CreateProperty<User>("User");
+			_user = user;
 		}
 
         public override async Task OnTurnAsync(ITurnContext turnContext, CancellationToken cancellationToken = default(CancellationToken))

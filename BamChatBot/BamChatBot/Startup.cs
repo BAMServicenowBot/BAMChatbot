@@ -52,6 +52,8 @@ namespace BamChatBot
             // The MainDialog that will be run by the bot.
             services.AddSingleton<MainDialog>();
 
+			services.AddSingleton<User>();
+
             // Create a global hashset for our ConversationReferences
             services.AddSingleton<ConcurrentDictionary<string, ConversationReference>>();
 			
