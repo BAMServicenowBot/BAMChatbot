@@ -11,6 +11,7 @@ using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Schema;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 
 namespace BamChatBot.Bots
 {
@@ -98,8 +99,9 @@ namespace BamChatBot.Bots
 			{
 				var user = new User();
 				//get params sent from SN
-				var userId = turnContext.Activity.From.Properties["userparam"].ToString();
-				user = user.GetUser(userId);
+				var userParam = turnContext.Activity.From.Properties["userparam"].ToString();
+				user = JsonConvert.DeserializeObject<User>(userParam);
+				//user = user.GetUser(userId);
 				this._user = user;
 				//get the user saved in cache
 				var cacheUser = await this._userAccessor.GetAsync(turnContext, () => new User());
@@ -107,7 +109,7 @@ namespace BamChatBot.Bots
 				cacheUser.Name = user.Name;
 				cacheUser.UserId = user.UserId;
 				await this._userAccessor.SetAsync(turnContext, cacheUser, cancellationToken);
-				await turnContext.SendActivityAsync(MessageFactory.Text("You sent param "+userId),cancellationToken);
+				await turnContext.SendActivityAsync(MessageFactory.Text("You sent param "+ userParam),cancellationToken);
 			}
 		}
     }
