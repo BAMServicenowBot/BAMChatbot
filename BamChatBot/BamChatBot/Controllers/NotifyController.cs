@@ -27,13 +27,15 @@ namespace BamChatBot.Controllers
         private readonly ConcurrentDictionary<string, ConversationReference> _conversationReferences;
         private readonly IBot _bot;
 		private ProcessStatus _processStatus;
+		private readonly User _user;
 
-		public NotifyController(IBotFrameworkHttpAdapter adapter, IConfiguration configuration, ConcurrentDictionary<string, ConversationReference> conversationReferences, IBot bot)
+		public NotifyController(IBotFrameworkHttpAdapter adapter, IConfiguration configuration, ConcurrentDictionary<string, ConversationReference> conversationReferences, IBot bot, User user)
         {
             _adapter = adapter;
             _appId = configuration["MicrosoftAppId"];
             _conversationReferences = conversationReferences;
             _bot = bot;
+			_user = user;
 			_processStatus = new ProcessStatus();
 
             if (string.IsNullOrEmpty(_appId))
@@ -53,11 +55,11 @@ namespace BamChatBot.Controllers
 			foreach (var conversationReference in _conversationReferences.Values)
             {
 				//if (conversationReference.ActivityId == processStatus.ActivityId)
-				if(user.UserId == processStatus.ChatbotUser)
-                {
+				//if(this._user.UserId == processStatus.ChatbotUser)
+                //{
 				    await ((BotAdapter)_adapter).ContinueConversationAsync(_appId, conversationReference, BotCallback, default(CancellationToken));
-					break;
-				}
+					//break;
+				//}
 				
 			}
 			var message = MessageFactory.Text("Process " + _processStatus.Process + " has finished with following status." + Environment.NewLine +
@@ -79,12 +81,15 @@ namespace BamChatBot.Controllers
             // If you encounter permission-related errors when sending this message, see
             // https://aka.ms/BotTrustServiceUrl
             MicrosoftAppCredentials.TrustServiceUrl(serviceUrl);
-			var message = MessageFactory.Text("Process " + _processStatus.Process + " has finished with following status."+Environment.NewLine+
-				"Status: "+_processStatus.State +Environment.NewLine+
-				"Start Time: "+_processStatus.Start+Environment.NewLine+
+			var user = await((DialogBot<MainDialog>)_bot)._userAccessor.GetAsync(turnContext, () => new User());
+			if (user.UserId == _processStatus.ChatbotUser)
+			{
+				var message = MessageFactory.Text("Process " + _processStatus.Process + " has finished with following status." + Environment.NewLine +
+				"Status: " + _processStatus.State + Environment.NewLine +
+				"Start Time: " + _processStatus.Start + Environment.NewLine +
 				"End Time: " + _processStatus.End);
-			await turnContext.SendActivityAsync(message);
-          
+				await turnContext.SendActivityAsync(message);
+			}
         }
     }
 }
