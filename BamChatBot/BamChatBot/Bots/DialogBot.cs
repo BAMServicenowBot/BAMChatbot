@@ -98,20 +98,19 @@ namespace BamChatBot.Bots
 			if (turnContext.Activity.Type == ActivityTypes.Event)
 			{
 				var user = new User();
-				if (!string.IsNullOrEmpty(turnContext.Activity.From.Id))
-				{ 
+				
 				//get params sent from SN
-				var userParam = turnContext.Activity.From.Properties["userparam"].ToString();
+				/*var userParam = turnContext.Activity.From.Properties["userparam"].ToString();
 				user = JsonConvert.DeserializeObject<User>(userParam);
 				//user = user.GetUser(userId);
-				this._user = user;
+				this._user = user;*/
 				//get the user saved in cache
 				var cacheUser = await this._userAccessor.GetAsync(turnContext, () => new User());
 				//set the values got from SN
 				cacheUser.Name = user.Name;
 				cacheUser.UserId = user.UserId;
 				await this._userAccessor.SetAsync(turnContext, cacheUser, cancellationToken);
-			}
+			    
 				await turnContext.SendActivityAsync(MessageFactory.Text("Event name: " + turnContext.Activity.Name + " Event value: " + turnContext.Activity.Value));
 			}
 		}
