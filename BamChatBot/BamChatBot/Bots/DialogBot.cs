@@ -6,6 +6,7 @@
 using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
+using BamChatBot.Dialogs;
 using BamChatBot.Models;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Dialogs;
@@ -96,20 +97,28 @@ namespace BamChatBot.Bots
         protected override async Task OnEventActivityAsync(ITurnContext<IEventActivity> turnContext, CancellationToken cancellationToken)
         {
 			if (turnContext.Activity.Type == ActivityTypes.Event)
-			{
+		{
 				var user = new User();
+				if(turnContext.Activity.Name == "urlClickedEvent")
+				{
+					await Dialog.RunAsync(turnContext, ConversationState.CreateProperty<DialogState>("DialogState"), cancellationToken);
+				}
+			
+				else
+				{
+					//get params sent from SN
+					var userParam = turnContext.Activity.From.Properties["userparam"].ToString();
+					user = JsonConvert.DeserializeObject<User>(userParam);
+					//user = user.GetUser(userId);
+					this._user = user;
+					//get the user saved in cache
+					var cacheUser = await this._userAccessor.GetAsync(turnContext, () => new User());
+					//set the values got from SN
+					cacheUser.Name = user.Name;
+					cacheUser.UserId = user.UserId;
+					await this._userAccessor.SetAsync(turnContext, cacheUser, cancellationToken);
+				}
 				
-				//get params sent from SN
-				/*var userParam = turnContext.Activity.From.Properties["userparam"].ToString();
-				user = JsonConvert.DeserializeObject<User>(userParam);
-				//user = user.GetUser(userId);
-				this._user = user;*/
-				//get the user saved in cache
-				var cacheUser = await this._userAccessor.GetAsync(turnContext, () => new User());
-				//set the values got from SN
-				cacheUser.Name = user.Name;
-				cacheUser.UserId = user.UserId;
-				await this._userAccessor.SetAsync(turnContext, cacheUser, cancellationToken);
 			    
 				await turnContext.SendActivityAsync(MessageFactory.Text("Event name: " + turnContext.Activity.Name + " Event value: " + turnContext.Activity.Value));
 			}
