@@ -98,6 +98,7 @@ namespace BamChatBot.Bots
 			if (turnContext.Activity.Type == ActivityTypes.Event)
 			{
 				var user = new User();
+				
 				//get params sent from SN
 				var userParam = turnContext.Activity.From.Properties["userparam"].ToString();
 				user = JsonConvert.DeserializeObject<User>(userParam);
@@ -109,6 +110,7 @@ namespace BamChatBot.Bots
 				cacheUser.Name = user.Name;
 				cacheUser.UserId = user.UserId;
 				await this._userAccessor.SetAsync(turnContext, cacheUser, cancellationToken);
+				await turnContext.SendActivityAsync(MessageFactory.Text("Event name: " + turnContext.Activity.Name + " Event value: " + turnContext.Activity.Value));
 			}
 		}
     }
