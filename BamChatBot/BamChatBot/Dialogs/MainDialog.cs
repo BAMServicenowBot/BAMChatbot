@@ -18,6 +18,7 @@ using BamChatBot.Models;
 using Microsoft.Bot.Builder.Dialogs.Choices;
 using Microsoft.Office.Interop;
 
+
 namespace BamChatBot.Dialogs
 {
     public class MainDialog : ComponentDialog
@@ -292,6 +293,18 @@ namespace BamChatBot.Dialogs
 								Action = new CardAction(ActionTypes.PostBack, "Click Here", null, "Click Here", null, "rpaSupport", null)
 							 } }
 						}, cancellationToken);
+					case "Request an Enhancement":
+						processDetails.Action = "enhancement";
+						return await stepContext.PromptAsync(nameof(ChoicePrompt), new PromptOptions
+						{
+							Prompt = MessageFactory.Text("To Request an Enhancement. "),
+							Choices = new List<Choice> { new Choice
+							{
+								Value = "enhancement",
+								Action = /*new CardAction(ActionTypes.PostBack, "Click Here", null, "Click Here", null, "enhancement", null)//*/ new CardAction(ActionTypes.OpenUrl, "Click Here", value: "https://bayviewdev.service-now.com/bam?id=rpa_new_request&type=enhancement")
+							 } }
+						}, cancellationToken);
+					case "Done":
 					default:
 						return await stepContext.ReplaceDialogAsync(InitialDialogId, processDetails, cancellationToken);
 
@@ -300,7 +313,7 @@ namespace BamChatBot.Dialogs
 			else
 			{
 			  processDetails = (ProcessDetails)stepContext.Result;
-				// Restart the main dialog with a different message the second time around
+				// Restart the main dialog with a different message the second time
 				return await stepContext.ReplaceDialogAsync(InitialDialogId, processDetails, cancellationToken);
 			}
 
@@ -339,9 +352,17 @@ namespace BamChatBot.Dialogs
 					// body, bcc etc...
 					oMailItem.Display(true);
 					return await stepContext.ReplaceDialogAsync(InitialDialogId, null, cancellationToken);
+				case "enhancement":
+					
+					var startInfo = new System.Diagnostics.ProcessStartInfo("https://bayviewdev.service-now.com/bam?id=rpa_new_request&type=enhancement");
+					System.Diagnostics.Process.Start("http://www.google.com");
+					//System.Diagnostics.Process.Start("explorer.exe",);
+					return await stepContext.ReplaceDialogAsync(InitialDialogId, null, cancellationToken);
+				default:
+					return await stepContext.ReplaceDialogAsync(InitialDialogId, null, cancellationToken);
+
 			}
-			
-			return await stepContext.ReplaceDialogAsync(InitialDialogId, null, cancellationToken);
+
 		}
 		}
 }
