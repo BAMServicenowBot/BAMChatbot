@@ -26,6 +26,7 @@ namespace BamChatBot.Dialogs
         private readonly  ProcessRecognizer _luisRecognizer;
         protected readonly ILogger Logger;
 		protected readonly IStatePropertyAccessor<User> _userAccessor;
+		private ProcessDetails processDetails;
 
 		// Dependency injection uses this constructor to instantiate MainDialog
 		public MainDialog(ProcessRecognizer luisRecognizer, ILogger<MainDialog> logger, UserState userState)
@@ -34,6 +35,7 @@ namespace BamChatBot.Dialogs
             _luisRecognizer = luisRecognizer;
             Logger = logger;
 			_userAccessor =  userState.CreateProperty<User>(nameof(User));
+			processDetails = new ProcessDetails();
 
 			AddDialog(new TextPrompt(nameof(TextPrompt)));
             AddDialog(new ChoicePrompt(nameof(ChoicePrompt)));
@@ -50,6 +52,7 @@ namespace BamChatBot.Dialogs
 
             // The initial child Dialog to run.
             InitialDialogId = nameof(WaterfallDialog);
+
         }
 
         private async Task<DialogTurnResult> IntroStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
@@ -249,7 +252,7 @@ namespace BamChatBot.Dialogs
         private async Task<DialogTurnResult> FinalStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
 			var _user = await _userAccessor.GetAsync(stepContext.Context, () => new User(), cancellationToken);
-			var processDetails = new ProcessDetails
+			this.processDetails = new ProcessDetails
 			{
 				User = _user
 			};
@@ -279,8 +282,8 @@ namespace BamChatBot.Dialogs
 							Prompt = MessageFactory.Text("To Report an Issue. "),
 							Choices = new List<Choice> { new Choice
 							{
-								Value = "issue",
-								Action = new CardAction(ActionTypes.PostBack, "Click Here", null, "Click Here", null, "issue", null)
+								Value = "https://bayviewdev.service-now.com/bam?id=rpa_new_request&type=incident",
+								Action = new CardAction(ActionTypes.PostBack, "Click Here", null, "Click Here", "openUrl", "https://bayviewdev.service-now.com/bam?id=rpa_new_request&type=incident", null)
 							 } }
 						}, cancellationToken);
 					case "Contact RPA Support":
@@ -289,8 +292,8 @@ namespace BamChatBot.Dialogs
 							Prompt = MessageFactory.Text("To Contact RPA Support. "),
 							Choices = new List<Choice> { new Choice
 							{
-								Value = "rpaSupport",
-								Action = new CardAction(ActionTypes.PostBack, "Click Here", null, "Click Here", null, "rpaSupport", null)
+								Value = "RPASupport@bayview.com",
+								Action = new CardAction(ActionTypes.PostBack, "Click Here", null, "Click Here", "openEmail", "RPASupport@bayview.com", null)
 							 } }
 						}, cancellationToken);
 					case "Request an Enhancement":
@@ -301,8 +304,8 @@ namespace BamChatBot.Dialogs
 							Prompt = MessageFactory.Text("To Request an Enhancement. "),
 							Choices = new List<Choice> { new Choice
 							{
-								Value = "enhancement",
-								Action = /*new CardAction(ActionTypes.PostBack, "Click Here", null, "Click Here", null, "enhancement", null)//*/ new CardAction(ActionTypes.OpenUrl, "Click Here", value: "https://bayviewdev.service-now.com/bam?id=rpa_new_request&type=enhancement")
+								Value = "https://bayviewdev.service-now.com/bam?id=rpa_new_request&type=enhancement",
+								Action = new CardAction(ActionTypes.PostBack, "Click Here", null, "Click Here", "openUrl", "https://bayviewdev.service-now.com/bam?id=rpa_new_request&type=enhancement", null)
 							 } }
 						}, cancellationToken);
 					case "Done":
@@ -339,31 +342,9 @@ namespace BamChatBot.Dialogs
 
 		private async Task<DialogTurnResult> ContinueStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
 		{
-			var result = (FoundChoice)stepContext.Result;
-			switch (result.Value)
-			{
-				case "issue":
-					System.Diagnostics.Process.Start("https://bayviewdev.service-now.com/bam?id=rpa_new_request&type=incident");
-					return await stepContext.ReplaceDialogAsync(InitialDialogId, null, cancellationToken);
-				case "rpaSupport":
-					
-					Microsoft.Office.Interop.Outlook.Application oApp = new Microsoft.Office.Interop.Outlook.Application();
-					Microsoft.Office.Interop.Outlook._MailItem oMailItem = (Microsoft.Office.Interop.Outlook._MailItem)oApp.CreateItem(Microsoft.Office.Interop.Outlook.OlItemType.olMailItem);
-					oMailItem.To = "RPASupport@bayview.com";
-					// body, bcc etc...
-					oMailItem.Display(true);
-					return await stepContext.ReplaceDialogAsync(InitialDialogId, null, cancellationToken);
-				case "enhancement":
-					
-					var startInfo = new System.Diagnostics.ProcessStartInfo("https://bayviewdev.service-now.com/bam?id=rpa_new_request&type=enhancement");
-					System.Diagnostics.Process.Start("http://www.google.com");
-					//System.Diagnostics.Process.Start("explorer.exe",);
-					return await stepContext.ReplaceDialogAsync(InitialDialogId, null, cancellationToken);
-				default:
-					return await stepContext.ReplaceDialogAsync(InitialDialogId, null, cancellationToken);
-
-			}
-
+			var processDetails = this.processDetails;
+			processDetails.Action = string.Empty;
+		    return await stepContext.ReplaceDialogAsync(InitialDialogId, this.processDetails, cancellationToken);
 		}
 		}
 }
