@@ -294,7 +294,8 @@ namespace BamChatBot.Dialogs
 							 } }
 						}, cancellationToken);
 					case "Request an Enhancement":
-						processDetails.Action = "enhancement";
+						processDetails.Action = string.Empty;
+						
 						return await stepContext.PromptAsync(nameof(ChoicePrompt), new PromptOptions
 						{
 							Prompt = MessageFactory.Text("To Request an Enhancement. "),
