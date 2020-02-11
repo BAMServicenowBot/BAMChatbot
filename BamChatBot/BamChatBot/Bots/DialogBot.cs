@@ -101,7 +101,8 @@ namespace BamChatBot.Bots
 				var user = new User();
 				if(turnContext.Activity.Name == "urlClickedEvent")
 				{
-				  await Dialog.RunAsync(turnContext, ConversationState.CreateProperty<DialogState>("DialogState"), cancellationToken);
+					await turnContext.SendActivityAsync(MessageFactory.Text("Event received"), cancellationToken);
+						//Dialog.RunAsync(turnContext, ConversationState.CreateProperty<DialogState>("DialogState"), cancellationToken);
 				}
 			
 				else

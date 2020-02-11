@@ -17,7 +17,7 @@ using BamChatBot.CognitiveModels;
 using BamChatBot.Models;
 using Microsoft.Bot.Builder.Dialogs.Choices;
 using Microsoft.Office.Interop;
-
+using BamChatBot.Cards;
 
 namespace BamChatBot.Dialogs
 {
