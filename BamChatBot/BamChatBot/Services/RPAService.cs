@@ -180,26 +180,81 @@ namespace BamChatBot.Services
 			return apiResponse;
 		}
 
-		internal List<Choice> GetListOfProcess(List<ProcessModel> processes)
+		internal TopProcess GetListOfProcess(List<ProcessModel> processes, int lastIdx)
 		{
+			var tempProcesses = new List<ProcessModel>();
+			//test
+			/*var _p = processes[processes.Count-1];
+			
+			for (var i=0; i < 10; i++)
+			{
+				var pm = new ProcessModel
+				{
+					Name = _p.Name + i.ToString(),
+					Sys_id = _p.Sys_id
+				};
+				
+				processes.Add(pm);
+			}*/
+			//end test
 			//initialize list of Choices
 			var choices = new List<Choice>();
 			
+			
+
 			if (processes.Count > 10)
 			{
-				//split 
+				var count = 0;
+				for(var p=lastIdx; p<processes.Count; p++)
+				{
+					if (count == 10)
+					{
+						lastIdx = p;
+						break;
+					}else if(p== processes.Count - 1)
+					{
+						lastIdx = p;
+					}
+					tempProcesses.Add(processes[p]);
+					count++;
+				}
+				
+
+				if (lastIdx != processes.Count - 1)
+				{
+					tempProcesses.Add(new ProcessModel
+					{
+						Sys_id = "Load_More",
+						Name = "Load More"
+					});
+				}
+
 			}
-			foreach (var process in processes)
+			else
 			{
+				tempProcesses = processes;
+			}
+		
+			foreach (var process in tempProcesses)
+			{
+				var name = process.Name; 
+				if(process.Sys_id != "Load_More")
+				{
+					//name+= " [" + process.LastRun.State + "]";
+				}
 				choices.Add(new Choice
 				{
 					Value = process.Sys_id,
-					Action = new CardAction(ActionTypes.MessageBack, process.Name, null, process.Name, process.Name, null, null)
+					Action = new CardAction(ActionTypes.MessageBack, name, null, process.Name, process.Name, null, null)
 
 				});
 			}
 
-			return choices;
+			return new TopProcess
+			{
+				Choices = choices,
+				LastIndex = lastIdx
+			};
 		}
 
 		internal ProcessModel GetSelectedProcess(List<ProcessModel> processes, string value)
@@ -213,6 +268,16 @@ namespace BamChatBot.Services
 				}
 			}
 			return processSelected;
+		}
+
+		internal Choice GetRPASupportOption()
+		{
+			return new Choice
+			{
+				Value = "rpaSupport",//RPASupport@bayview.com
+				Action = new CardAction(ActionTypes.PostBack, "Contact RPA Support", null, "Contact RPA Support", "openEmail", "RPASupport@bayview.com", null)
+
+			};
 		}
 		}
 }

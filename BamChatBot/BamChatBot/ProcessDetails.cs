@@ -16,7 +16,8 @@ namespace BamChatBot
         public int MoreThan10Index { get; set; }
         public string Error { get; set; }
         public List<Job> Jobs { get; set; }
-        public ProcessDetails()
+		public bool LoadMore { get; set; }
+		public ProcessDetails()
         {
             Processes = new List<ProcessModel>();
             Jobs = new List<Job>();

@@ -4,6 +4,7 @@
 // Generated with Bot Builder V4 SDK Template for Visual Studio CoreBot v4.6.2
 
 using System.Collections.Concurrent;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using BamChatBot.Dialogs;
@@ -32,6 +33,7 @@ namespace BamChatBot.Bots
 		protected ConcurrentDictionary<string, ConversationReference> _conversationReferences;
 		public User _user;
 		public readonly IStatePropertyAccessor<User> _userAccessor;
+		public readonly IStatePropertyAccessor<ConversationFlow> _conversationFlow;
 
 		public DialogBot(ConversationState conversationState, UserState userState, T dialog, ILogger<DialogBot<T>> logger, ConcurrentDictionary<string, ConversationReference> conversationReferences, User user)
         {
@@ -41,6 +43,7 @@ namespace BamChatBot.Bots
             Logger = logger;
             _conversationReferences = conversationReferences;
 			_userAccessor = userState.CreateProperty<User>("User");
+			_conversationFlow = conversationState.CreateProperty<ConversationFlow>("ConversationFlow");
 			_user = user;
 		}
 
@@ -87,11 +90,19 @@ namespace BamChatBot.Bots
 			{
 				AddConversationReference(turnContext.Activity as Activity);
 			}
-
 			Logger.LogInformation("Running dialog with Message Activity.");
+
+			var conversationFlow = await this._conversationFlow.GetAsync(turnContext, () => new ConversationFlow());
+			if (conversationFlow.AskingForParameters)
+			{
+				await FillOutParameters(turnContext);
+			}
+			else
+			{
+				// Run the Dialog with the new message Activity.
+				await Dialog.RunAsync(turnContext, ConversationState.CreateProperty<DialogState>("DialogState"), cancellationToken);
+			}
            
-            // Run the Dialog with the new message Activity.
-            await Dialog.RunAsync(turnContext, ConversationState.CreateProperty<DialogState>("DialogState"), cancellationToken);
         }
 
         protected override async Task OnEventActivityAsync(ITurnContext<IEventActivity> turnContext, CancellationToken cancellationToken)
@@ -121,5 +132,26 @@ namespace BamChatBot.Bots
 				
 			}
 		}
-    }
+
+		private async Task FillOutParameters(ITurnContext turnContext)
+		{
+			var conversationFlow = await this._conversationFlow.GetAsync(turnContext, () => new ConversationFlow());
+			//ask the user for input
+			foreach (var g in conversationFlow.ProcessParameters)
+			{
+				
+				foreach(var i in g.Value)
+				{
+					await turnContext.SendActivityAsync(MessageFactory.Text("Enter " + i.ParmName));
+				}
+				if (g.Key == conversationFlow.ProcessParameters.LastOrDefault().Key)
+				{
+
+				}
+			}
+			/*await this._userAccessor.SetAsync(turnContext, cacheUser, cancellationToken);
+			await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions
+			{ Prompt = MessageFactory.Text("Enter " + pp.ParmName) });*/
+		}
+	}
 }

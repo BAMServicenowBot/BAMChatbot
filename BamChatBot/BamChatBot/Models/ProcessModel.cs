@@ -10,18 +10,21 @@ namespace BamChatBot.Models
         public string Sys_id { get; set; }
         public string Name { get; set; }
         public IList<Release> Releases { get; set; }
-        public bool MissingBots { get; set; }
-      //  public IList<string> JobRuns { get; set; }
-        public string StartedBy { get; set; }
+		public IDictionary<string, List<ProcessParameters>> ProcessParameters { get; set; }
+		public bool MissingBots { get; set; }
+		public ProcessLastRun LastRun { get; set; }
+										  
+		public string StartedBy { get; set; }
 
         public string UserId { get; set; }
 
         public string Error { get; set; }
+		
 
-        public ProcessModel()
+		public ProcessModel()
         {
             Releases = new List<Release>();
-            //JobRuns = new List<string>();
+			ProcessParameters = new Dictionary<string, List<ProcessParameters>>();
         }
     }
 }

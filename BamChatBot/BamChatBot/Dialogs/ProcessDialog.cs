@@ -19,8 +19,8 @@ namespace BamChatBot.Dialogs
             AddDialog(new TextPrompt(nameof(TextPrompt)));
             AddDialog(new ChoicePrompt(nameof(ChoicePrompt)));
             AddDialog(new ConfirmPrompt(nameof(ConfirmPrompt)));
-            AddDialog(new StatusDialog());
-			AddDialog(new StopProcessDialog());
+           // AddDialog(new StatusDialog());
+			//AddDialog(new StopProcessDialog());
             AddDialog(new WaterfallDialog(nameof(WaterfallDialog), new WaterfallStep[]
             {
                 IntroStepAsync,

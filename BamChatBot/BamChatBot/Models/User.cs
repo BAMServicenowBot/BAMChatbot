@@ -15,7 +15,8 @@ namespace BamChatBot.Models
         public string UserId { get; set; }
         public string Name { get; set; }
         public string Error { get; set; }
-		
+		public int LastIndex { get; set; }
+
 
 		internal User GetUser(string userId)
         {
@@ -77,5 +78,20 @@ namespace BamChatBot.Models
 			}
 		}
 
-    }
+		internal void GetUserRunningProcess(ProcessDetails processDetails)
+		{
+			var rpaService = new RPAService();
+			var result = rpaService.GetApiResult("getUserRunningProcess", processDetails.User.UserId);
+			if (!result.IsSuccess)
+			{
+				processDetails.Error = JsonConvert.DeserializeObject<ProcessModel>(result.Content).Error;
+			}
+			else
+			{
+				var processes = JsonConvert.DeserializeObject<List<ProcessModel>>(result.Content);
+				processDetails.Processes = processes;
+			}
+		}
+
+	}
 }

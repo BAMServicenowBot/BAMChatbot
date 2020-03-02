@@ -62,11 +62,11 @@ namespace BamChatBot.Controllers
 				//}
 				
 			}
-			var message = MessageFactory.Text("Process " + _processStatus.Process + " has finished with following status." + Environment.NewLine +
-				"Status: " + _processStatus.State + Environment.NewLine +
+			var message = MessageFactory.Text("Process " + _processStatus.Process + " has finished. Here is the run status." + Environment.NewLine +
 				"Start Time: " + _processStatus.Start + Environment.NewLine +
-				"End Time: " + _processStatus.End);
-			// Let the caller know proactive messages have been sent
+				"End Time: " + _processStatus.End + Environment.NewLine +
+				"Status: " + _processStatus.State);//Exceptions
+												   // Let the caller know proactive messages have been sent
 			return new ContentResult()
             {
                 Content = "<html><body><h1>Process has finished. User: "+string.Join(",", conversationReferenceActivityIds )+"User from SN "+ processStatus.ChatbotUser +"Conversation "+ _conversationReferences.Values.Count+"</h1></body></html>",

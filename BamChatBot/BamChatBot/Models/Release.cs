@@ -9,6 +9,12 @@ namespace BamChatBot.Models
         public string U_robots { get; set; }
         public string Sys_id { get; set; }
         public IList<Asset> Assets { get; set; }
-					
-    }
+		public bool Parameters_Required { get; set; }
+		public List<ProcessParameters> Parameters { get; set; }
+		public Release()
+		{
+			Parameters = new List<ProcessParameters>();
+		}
+
+	}
 }
