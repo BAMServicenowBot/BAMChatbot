@@ -132,7 +132,7 @@ namespace BamChatBot.Dialogs
                     //save activity id for when process finish
                   var activityId =  stepContext.Context.Activity.Id;
 
-                var response = config.StartProcess(selectedProcess, activityId);
+                var response = config.StartProcess(selectedProcess);
                 if (!string.IsNullOrEmpty(response.Content))
                 {
                     if (response.IsSuccess)

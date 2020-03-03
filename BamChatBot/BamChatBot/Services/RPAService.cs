@@ -82,7 +82,7 @@ namespace BamChatBot.Services
 			return apiPath;
 		}
 
-		internal APIResponse StartProcess(ProcessModel data, string activityId)
+		internal APIResponse StartProcess(ProcessModel data)
 		{
 			var apiResponse = new APIResponse();
 			var apiPath = GetApiPath();

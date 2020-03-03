@@ -17,12 +17,13 @@ namespace BamChatBot.Dialogs
 	{
 		protected readonly IStatePropertyAccessor<User> _userAccessor;
 		public readonly IStatePropertyAccessor<ConversationFlow> _conversationFlow;
-		public StartProcessDialog(IStatePropertyAccessor<User> userAccessor, IStatePropertyAccessor<ConversationFlow> conversationFlow) 
+		public StartProcessDialog(IStatePropertyAccessor<User> userAccessor, IStatePropertyAccessor<ConversationFlow> conversationFlow)
 			: base(nameof(StartProcessDialog))
 		{
 			_userAccessor = userAccessor;
 			_conversationFlow = conversationFlow;
 			AddDialog(new ChoicePrompt(nameof(ChoicePrompt)));
+			AddDialog(new StartProcessErrorDialog());
 			AddDialog(new WaterfallDialog(nameof(WaterfallDialog), new WaterfallStep[]
 			{
 				IntroStepAsync,
@@ -34,10 +35,10 @@ namespace BamChatBot.Dialogs
 
 			// The initial child Dialog to run.
 			InitialDialogId = nameof(WaterfallDialog);
-			
+
 		}
 
-		
+
 		private async Task<DialogTurnResult> IntroStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
 		{
 			var processDetails = (ProcessDetails)stepContext.Options;
@@ -66,7 +67,7 @@ namespace BamChatBot.Dialogs
 				//save index
 				_user.LastIndex = result.LastIndex;
 				await this._userAccessor.SetAsync(stepContext.Context, _user, cancellationToken);
-				
+
 				return await stepContext.PromptAsync(nameof(ChoicePrompt), new PromptOptions
 				{
 					Prompt = MessageFactory.Text(text + Environment.NewLine + "Click the process you would like to trigger."),
@@ -109,11 +110,11 @@ namespace BamChatBot.Dialogs
 				processDetails.ProcessSelected.StartedBy = "chat_bot";
 				return await stepContext.PromptAsync(nameof(ChoicePrompt), new PromptOptions
 				{
-					Prompt = MessageFactory.Text("You have selected "+ processDetails.ProcessSelected.Name+". Start this process?"),
+					Prompt = MessageFactory.Text("You have selected " + processDetails.ProcessSelected.Name + ". Start this process?"),
 					Choices = ChoiceFactory.ToChoices(new List<string> { "Yes", "No" })
 				}, cancellationToken);
 			}
-		
+
 		}
 
 		private async Task<DialogTurnResult> StartProcessStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
@@ -134,7 +135,7 @@ namespace BamChatBot.Dialogs
 					if (processDetails.ProcessSelected.Releases.Any(r => r.Parameters_Required == true))
 					{
 						//group parameters by release
-						foreach(var r in processDetails.ProcessSelected.Releases)
+						foreach (var r in processDetails.ProcessSelected.Releases)
 						{
 							if (processDetails.ProcessSelected.ProcessParameters.ContainsKey(r.Sys_id))
 							{
@@ -145,7 +146,7 @@ namespace BamChatBot.Dialogs
 								processDetails.ProcessSelected.ProcessParameters.Add(r.Sys_id, r.Parameters);
 							}
 						}
-						
+
 						conversationFlow.AskingForParameters = true;
 						conversationFlow.ProcessParameters = processDetails.ProcessSelected.ProcessParameters;
 						conversationFlow.GroupLastIndex = 0;
@@ -153,47 +154,36 @@ namespace BamChatBot.Dialogs
 						await this._conversationFlow.SetAsync(stepContext.Context, conversationFlow);
 						return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions
 						{ Prompt = MessageFactory.Text("This process needs input parameters, please enter ") }, cancellationToken);
-						
+
 						//test
 						//restart this Dialog
 						//return await stepContext.ReplaceDialogAsync(nameof(StartProcessDialog), processDetails, cancellationToken);
-						}
+					}
 					else
 					{
 						conversationFlow.AskingForParameters = false;
 						await this._conversationFlow.SetAsync(stepContext.Context, conversationFlow);
-						var response = rpaService.StartProcess(processDetails.ProcessSelected, activityId);
-					 if (!string.IsNullOrEmpty(response.Content))
-					 {
-						if (response.IsSuccess)
+						var response = rpaService.StartProcess(processDetails.ProcessSelected);
+						var error = false;
+						if (string.IsNullOrEmpty(response.Content) || !response.IsSuccess)
 						{
-							processDetails.Jobs = JsonConvert.DeserializeObject<List<Job>>(response.Content);
-
+							error = true;
+						}
+						if (error)
+						{
+							return await stepContext.ReplaceDialogAsync(nameof(StartProcessErrorDialog), processDetails, cancellationToken);
 						}
 						else
 						{
-							processDetails.Action = "error";
-							processDetails.Error = JsonConvert.DeserializeObject<Job>(response.Content).Error;
-						}
+							processDetails.Jobs = JsonConvert.DeserializeObject<List<Job>>(response.Content);
 
-						return await stepContext.PromptAsync(nameof(ChoicePrompt), new PromptOptions
-						{
-							Prompt = MessageFactory.Text(processDetails.ProcessSelected.Name + " process  has started, you will be notified when it finishes. Do you want to run another process?"),
-							Choices = ChoiceFactory.ToChoices(new List<string> { "Yes", "No" })
-						}, cancellationToken);
-						//return await stepContext.ReplaceDialogAsync(nameof(MainDialog), processDetails, cancellationToken);
-					 }
-					else//there was an error
-					{
-							
-							var rpaSupportChoice = rpaService.GetRPASupportOption();
 							return await stepContext.PromptAsync(nameof(ChoicePrompt), new PromptOptions
-						{
-							Prompt = MessageFactory.Text("To continue to run this bot, please contact RPA Support. "),
-							Choices = new List<Choice> { rpaSupportChoice }
-						}, cancellationToken);
+							{
+								Prompt = MessageFactory.Text(processDetails.ProcessSelected.Name + " process  has started, you will be notified when it finishes. Do you want to run another process?"),
+								Choices = ChoiceFactory.ToChoices(new List<string> { "Yes", "No" })
+							}, cancellationToken);
+						}
 					}
-				}
 				}
 				else
 				{
@@ -229,9 +219,9 @@ namespace BamChatBot.Dialogs
 
 		private static async Task<DialogTurnResult> FillOutParameters(WaterfallStepContext stepContext, ProcessParameters pp)
 		{
-		 return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions
-		 { Prompt = MessageFactory.Text("Enter " + pp.ParmName) });
+			return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions
+			{ Prompt = MessageFactory.Text("Enter " + pp.ParmName) });
 		}
 
-		}
+	}
 }
