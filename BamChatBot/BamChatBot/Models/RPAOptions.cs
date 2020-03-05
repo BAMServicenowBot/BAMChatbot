@@ -16,6 +16,7 @@ namespace BamChatBot.Models
 				"Process Status",
 				"Report an Issue",
 				"Request an Enhancement",
+				"Submit a New Idea",
 				"Contact RPA Support",
 				"Stop a Process",
 				"Start Over",

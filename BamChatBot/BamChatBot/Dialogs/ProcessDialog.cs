@@ -158,7 +158,7 @@ namespace BamChatBot.Dialogs
                         Choices = new List<Choice> { new Choice
                             {
                                 Value = "rpaSupport",
-                                Action = new CardAction(ActionTypes.OpenUrl, "Click Here", value: "https://bayviewdev.service-now.com/bam?id=rpa_new_request&type=incident")
+                                Action = new CardAction(ActionTypes.OpenUrl, "Click Here", value: "bam?id=rpa_new_request&type=incident")
                              } }
                     }, cancellationToken);
                 }

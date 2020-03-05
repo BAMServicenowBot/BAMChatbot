@@ -245,8 +245,7 @@ namespace BamChatBot.Services
 				choices.Add(new Choice
 				{
 					Value = process.Sys_id,
-					Action = new CardAction(ActionTypes.MessageBack, name, null, process.Name, process.Name, null, null)
-
+					Action = new CardAction(ActionTypes.PostBack, name, null, process.Name, process.Name, process.Sys_id, null)
 				});
 			}
 

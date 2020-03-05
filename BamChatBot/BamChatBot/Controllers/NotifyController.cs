@@ -62,7 +62,7 @@ namespace BamChatBot.Controllers
 				//}
 				
 			}
-			var message = MessageFactory.Text("Process " + _processStatus.Process + " has finished. Here is the run status." + Environment.NewLine +
+			var message = MessageFactory.Text("The " + _processStatus.Process + " process has finished. Here is the run status." + Environment.NewLine +
 				"Start Time: " + _processStatus.Start + Environment.NewLine +
 				"End Time: " + _processStatus.End + Environment.NewLine +
 				"Status: " + _processStatus.State);//Exceptions

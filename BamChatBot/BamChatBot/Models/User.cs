@@ -25,7 +25,7 @@ namespace BamChatBot.Models
             var user = JsonConvert.DeserializeObject<User>(result.Content);
           /*  var user = new User();
             //get user first name  
-            var url = "https://bayviewdev.service-now.com/api/baam/bam_chat_bot/getUser";
+            var url = "/api/baam/bam_chat_bot/getUser";
             var userName = GetLoginUserName();
             var urlParameters = "?user_name="+ userName;
 

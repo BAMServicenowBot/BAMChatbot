@@ -68,11 +68,12 @@ namespace BamChatBot.Dialogs
 				_user.LastIndex = result.LastIndex;
 				await this._userAccessor.SetAsync(stepContext.Context, _user, cancellationToken);
 
-				return await stepContext.PromptAsync(nameof(ChoicePrompt), new PromptOptions
+				return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions
 				{
-					Prompt = MessageFactory.Text(text + Environment.NewLine + "Click the process you would like to trigger."),
+					Prompt = (Activity)ChoiceFactory.HeroCard(choices, text + Environment.NewLine + "Click the process you would like to trigger.")
+					/*Prompt = MessageFactory.Text(text + Environment.NewLine + "Click the process you would like to trigger."),
 					Choices = choices,
-					Style = ListStyle.Auto
+					Style = ListStyle.Auto*/
 				}, cancellationToken);
 
 			}
@@ -87,32 +88,42 @@ namespace BamChatBot.Dialogs
 		private async Task<DialogTurnResult> ConfirmStartProcessStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
 		{
 			var processDetails = (ProcessDetails)stepContext.Options;
-			var result = (FoundChoice)stepContext.Result;
+			var result = stepContext.Result.ToString();
 			var _user = await _userAccessor.GetAsync(stepContext.Context, () => new User(), cancellationToken);
-			if (result.Value == "rpaSupport")
+			if (result == "RPASupport@bayview.com")
 			{
 				_user.LastIndex = 0;
 				await _userAccessor.SetAsync(stepContext.Context, _user, cancellationToken);
 				processDetails.Action = string.Empty;
 				return await stepContext.ReplaceDialogAsync(nameof(MainDialog), processDetails, cancellationToken);
 			}
-			else if (result.Value == "Load_More")
+			else if (result == "Load_More")
 			{
 				processDetails.LoadMore = true;
 				return await stepContext.ReplaceDialogAsync(nameof(StartProcessDialog), processDetails, cancellationToken);
 			}
 			else
 			{
-				_user.LastIndex = 0;
-				await _userAccessor.SetAsync(stepContext.Context, _user, cancellationToken);
 				var rpaService = new RPAService();
-				processDetails.ProcessSelected = rpaService.GetSelectedProcess(processDetails.Processes, result.Value);
-				processDetails.ProcessSelected.StartedBy = "chat_bot";
-				return await stepContext.PromptAsync(nameof(ChoicePrompt), new PromptOptions
+				processDetails.ProcessSelected = rpaService.GetSelectedProcess(processDetails.Processes, result);
+				//check if a process was selected, or something was written
+				if (!string.IsNullOrEmpty(processDetails.ProcessSelected.Sys_id))
 				{
-					Prompt = MessageFactory.Text("You have selected " + processDetails.ProcessSelected.Name + ". Start this process?"),
-					Choices = ChoiceFactory.ToChoices(new List<string> { "Yes", "No" })
-				}, cancellationToken);
+					_user.LastIndex = 0;
+					await _userAccessor.SetAsync(stepContext.Context, _user, cancellationToken);
+
+					processDetails.ProcessSelected.StartedBy = "chat_bot";
+					return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions
+					{
+						Prompt = (Activity)ChoiceFactory.SuggestedAction(ChoiceFactory.ToChoices(new List<string> { "Yes", "No" }), "You have selected " + processDetails.ProcessSelected.Name + ". Start this process?")
+						/*Prompt = MessageFactory.Text("You have selected " + processDetails.ProcessSelected.Name + ". Start this process?"),
+						Choices = ChoiceFactory.ToChoices(new List<string> { "Yes", "No" })*/
+					}, cancellationToken);
+				}
+				else//start main dialog 
+				{
+					return await stepContext.ReplaceDialogAsync(nameof(MainDialog), null, cancellationToken);
+				}
 			}
 
 		}
@@ -120,8 +131,8 @@ namespace BamChatBot.Dialogs
 		private async Task<DialogTurnResult> StartProcessStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
 		{
 			var processDetails = (ProcessDetails)stepContext.Options;
-			var result = (FoundChoice)stepContext.Result;
-			if (result.Value == "Yes")
+			var result = stepContext.Result.ToString();
+			if (result == "Yes")
 			{
 				//get conversationflow obj
 				var conversationFlow = await this._conversationFlow.GetAsync(stepContext.Context, () => new ConversationFlow());
@@ -177,10 +188,11 @@ namespace BamChatBot.Dialogs
 						{
 							processDetails.Jobs = JsonConvert.DeserializeObject<List<Job>>(response.Content);
 
-							return await stepContext.PromptAsync(nameof(ChoicePrompt), new PromptOptions
+							return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions
 							{
-								Prompt = MessageFactory.Text(processDetails.ProcessSelected.Name + " process  has started, you will be notified when it finishes. Do you want to run another process?"),
-								Choices = ChoiceFactory.ToChoices(new List<string> { "Yes", "No" })
+								Prompt = (Activity)ChoiceFactory.SuggestedAction(ChoiceFactory.ToChoices(new List<string> { "Yes", "No" }), processDetails.ProcessSelected.Name + " process  has started, you will be notified when it finishes. Do you want to run another process?")
+								/*Prompt = MessageFactory.Text(processDetails.ProcessSelected.Name + " process  has started, you will be notified when it finishes. Do you want to run another process?"),
+								Choices = ChoiceFactory.ToChoices(new List<string> { "Yes", "No" })*/
 							}, cancellationToken);
 						}
 					}
@@ -192,11 +204,16 @@ namespace BamChatBot.Dialogs
 					return await stepContext.ReplaceDialogAsync(nameof(MainDialog), processDetails, cancellationToken);
 				}
 			}
-			else//when no is selected
+			else if(result == "No")//when no is selected
 			{
 				processDetails.Action = string.Empty;
 				return await stepContext.ReplaceDialogAsync(nameof(MainDialog), processDetails, cancellationToken);
 
+			}
+			else //when something is typed
+			{
+				processDetails.Action = string.Empty;
+				return await stepContext.ReplaceDialogAsync(nameof(MainDialog), null, cancellationToken);
 			}
 		}
 
@@ -204,16 +221,21 @@ namespace BamChatBot.Dialogs
 		{
 			var processDetails = (ProcessDetails)stepContext.Options;
 
-			var action = (FoundChoice)stepContext.Result;
-			if (action.Value == "Yes")
+			var action = stepContext.Result.ToString();
+			if (action == "Yes")
 			{
 				//restart this Dialog
 				return await stepContext.ReplaceDialogAsync(nameof(StartProcessDialog), processDetails, cancellationToken);
 			}
-			else//go back to main Dialog
+			else if(action == "No")//go back to main Dialog
 			{
 				processDetails.Action = string.Empty;
 				return await stepContext.ReplaceDialogAsync(nameof(MainDialog), processDetails, cancellationToken);
+			}
+			else//go back to main Dialog with null
+			{
+				processDetails.Action = string.Empty;
+				return await stepContext.ReplaceDialogAsync(nameof(MainDialog), null, cancellationToken);
 			}
 		}
 

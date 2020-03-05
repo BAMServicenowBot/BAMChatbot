@@ -13,7 +13,7 @@ using Microsoft.Bot.Schema;
 
 namespace BamChatBot.Dialogs
 {
-    public class StopProcessDialog : CancelAndHelpDialog
+	public class StopProcessDialog : CancelAndHelpDialog
 	{
 		protected readonly IStatePropertyAccessor<User> _userAccessor;
 		public StopProcessDialog(IStatePropertyAccessor<User> userAccessor) : base(nameof(StopProcessDialog))
@@ -65,11 +65,12 @@ namespace BamChatBot.Dialogs
 				_user.LastIndex = result.LastIndex;
 				await this._userAccessor.SetAsync(stepContext.Context, _user, cancellationToken);
 
-				return await stepContext.PromptAsync(nameof(ChoicePrompt), new PromptOptions
+				return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions
 				{
-					Prompt = MessageFactory.Text(text+ "Which one would you like to stop?"),
+					Prompt = (Activity)ChoiceFactory.HeroCard(choices, text + "Which one would you like to stop?")
+					/*Prompt = MessageFactory.Text(text+ "Which one would you like to stop?"),
 					Choices = choices,
-					Style = ListStyle.Auto
+					Style = ListStyle.Auto*/
 				}, cancellationToken);
 
 			}
@@ -84,40 +85,48 @@ namespace BamChatBot.Dialogs
 		private async Task<DialogTurnResult> ConfirmStopProcessStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
 		{
 			var processDetails = (ProcessDetails)stepContext.Options;
-			var result = (FoundChoice)stepContext.Result;
+			var result = stepContext.Result.ToString();
 			var _user = await _userAccessor.GetAsync(stepContext.Context, () => new User(), cancellationToken);
-			switch (result.Value)
+			switch (result)
 			{
 				case "Load_More":
 					processDetails.LoadMore = true;
 					return await stepContext.ReplaceDialogAsync(nameof(StopProcessDialog), processDetails, cancellationToken);
 
-				case "rpaSupport":
+				case "RPASupport@bayview.com":
 					_user.LastIndex = 0;
 					await _userAccessor.SetAsync(stepContext.Context, _user, cancellationToken);
 					processDetails.Action = string.Empty;
 					return await stepContext.ReplaceDialogAsync(nameof(MainDialog), processDetails, cancellationToken);
 
 				default:
-					_user.LastIndex = 0;
-					await _userAccessor.SetAsync(stepContext.Context, _user, cancellationToken);
 					var rpaService = new RPAService();
-					processDetails.ProcessSelected = rpaService.GetSelectedProcess(processDetails.Processes, result.Value);
-					return await stepContext.PromptAsync(nameof(ChoicePrompt), new PromptOptions
+					processDetails.ProcessSelected = rpaService.GetSelectedProcess(processDetails.Processes, result);
+					if (!string.IsNullOrEmpty(processDetails.ProcessSelected.Sys_id))
 					{
-						Prompt = MessageFactory.Text("You have selected " + processDetails.ProcessSelected.Name + ". Stop this process?"),
-						Choices = ChoiceFactory.ToChoices(new List<string> { "Yes", "No" })
-					}, cancellationToken);
+						_user.LastIndex = 0;
+						await _userAccessor.SetAsync(stepContext.Context, _user, cancellationToken);
+						return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions
+						{
+							Prompt = (Activity)ChoiceFactory.SuggestedAction(ChoiceFactory.ToChoices(new List<string> { "Yes", "No" }), "You have selected " + processDetails.ProcessSelected.Name + ". Stop this process?")
+							/*Prompt = MessageFactory.Text("You have selected " + processDetails.ProcessSelected.Name + ". Stop this process?"),
+							Choices = ChoiceFactory.ToChoices(new List<string> { "Yes", "No" })*/
+						}, cancellationToken);
+					}
+					else
+					{
+						return await stepContext.ReplaceDialogAsync(nameof(MainDialog), null, cancellationToken);
+					}
 			}
 		}
 
-			private async Task<DialogTurnResult> StopProcessStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
+		private async Task<DialogTurnResult> StopProcessStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
 		{
 			var msg = string.Empty;
-			var result = (FoundChoice)stepContext.Result;
+			var result = stepContext.Result.ToString();
 			var processDetails = (ProcessDetails)stepContext.Options;
 			var rpaService = new RPAService();
-			if (result.Value== "Yes")
+			if (result == "Yes")
 			{
 				var response = rpaService.StopProcess(processDetails.ProcessSelected.Sys_id);
 				if (response.IsSuccess)
@@ -142,11 +151,15 @@ namespace BamChatBot.Dialogs
 				}, cancellationToken);
 				return await stepContext.ReplaceDialogAsync(nameof(MainDialog), processDetails, cancellationToken);
 			}
-			else
+			else if (result == "No")
 			{
 				return await stepContext.ReplaceDialogAsync(nameof(StopProcessDialog), processDetails, cancellationToken);
 			}
-			
+			else
+			{
+				return await stepContext.ReplaceDialogAsync(nameof(StopProcessDialog), null, cancellationToken);
+			}
+
 		}
-		}
+	}
 }

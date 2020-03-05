@@ -79,7 +79,7 @@ namespace BamChatBot.Dialogs
 						message = processDetails.ProcessSelected.Name + " process  has started, you will be notified when it finishes. Do you want to run another process?";
 						return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions
 						{
-							Prompt = (Activity)ChoiceFactory.HeroCard(ChoiceFactory.ToChoices(new List<string> { "Yes", "No" }), message),
+							Prompt = (Activity)ChoiceFactory.SuggestedAction(ChoiceFactory.ToChoices(new List<string> { "Yes", "No" }), message),
 							//Prompt = MessageFactory.Text(message),
 							//Choices = ChoiceFactory.ToChoices(new List<string> { "Yes", "No" })
 						}, cancellationToken);
@@ -87,7 +87,7 @@ namespace BamChatBot.Dialogs
 						message = processDetails.Error + " " + txt;
 						return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions
 						{
-							Prompt = (Activity)ChoiceFactory.HeroCard(ChoiceFactory.ToChoices(new List<string> { "Yes", "No" }), message),
+							Prompt = (Activity)ChoiceFactory.SuggestedAction(ChoiceFactory.ToChoices(new List<string> { "Yes", "No" }), message),
 							//Prompt = MessageFactory.Text(message),
 							//Choices = ChoiceFactory.ToChoices(new List<string> { "Yes", "No" })
 						}, cancellationToken);
@@ -182,10 +182,11 @@ namespace BamChatBot.Dialogs
 				var choices = new List<Choice> { rpaSupport };
 				processDetails.Action = "error";
 
-				return await stepContext.PromptAsync(nameof(ChoicePrompt), new PromptOptions
+				return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions
 				{
-					Prompt = MessageFactory.Text("To continue to run this bot, please contact RPA Support."),
-					Choices = choices
+					Prompt = (Activity)ChoiceFactory.SuggestedAction(choices, "To continue to run this bot, please contact RPA Support.")
+																													 /*Prompt = MessageFactory.Text("To continue to run this bot, please contact RPA Support."),
+																													 Choices = choices*/
 				}, cancellationToken);
 			}
 		}
@@ -249,10 +250,11 @@ namespace BamChatBot.Dialogs
 						processDetails.Action = "startOver";
 						return await stepContext.ReplaceDialogAsync(nameof(MainDialog), processDetails, cancellationToken);
 					case "Report an Issue":
+						processDetails.Action = string.Empty;
 						var choices = new List<Choice> { new Choice
 							{
-								Value = "https://bayviewdev.service-now.com/bam?id=rpa_new_request&type=incident",
-								Action = new CardAction(ActionTypes.PostBack, "Click Here", null, "Click Here", "openUrl", "https://bayviewdev.service-now.com/bam?id=rpa_new_request&type=incident", null)
+								Value = "bam?id=rpa_new_request&type=incident",
+								Action = new CardAction(ActionTypes.PostBack, "Click Here", null, "Click Here", "openUrl", "bam?id=rpa_new_request&type=incident", null)
 							 } };
 						return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions
 						{
@@ -260,34 +262,52 @@ namespace BamChatBot.Dialogs
 							/*Prompt = MessageFactory.Text("To Report an Issue. "),
 							Choices = new List<Choice> { new Choice
 							{
-								Value = "https://bayviewdev.service-now.com/bam?id=rpa_new_request&type=incident",
-								Action = new CardAction(ActionTypes.PostBack, "Click Here", null, "Click Here", "openUrl", "https://bayviewdev.service-now.com/bam?id=rpa_new_request&type=incident", null)
+								Value = "bam?id=rpa_new_request&type=incident",
+								Action = new CardAction(ActionTypes.PostBack, "Click Here", null, "Click Here", "openUrl", "bam?id=rpa_new_request&type=incident", null)
 							 } }*/
 						}, cancellationToken);
 					case "Contact RPA Support":
 
-						return await stepContext.PromptAsync(nameof(ChoicePrompt), new PromptOptions
+						return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions
 						{
-							Prompt = MessageFactory.Text("You would like to contact RPA Support, is that correct?"),
-							Choices = ChoiceFactory.ToChoices(new List<string> { "Yes", "No" })
+							Prompt = (Activity)ChoiceFactory.SuggestedAction(ChoiceFactory.ToChoices(new List<string> { "Yes", "No" }), "You would like to contact RPA Support, is that correct?")
+							/*Prompt = MessageFactory.Text("You would like to contact RPA Support, is that correct?"),
+							Choices = ChoiceFactory.ToChoices(new List<string> { "Yes", "No" })*/
 						}, cancellationToken);
 					case "Request an Enhancement":
 						processDetails.Action = string.Empty;
-
-						return await stepContext.PromptAsync(nameof(ChoicePrompt), new PromptOptions
+						var options = new List<Choice> { new Choice
+							{
+								Value = "bam?id=rpa_new_request&type=enhancement",
+								Action = new CardAction(ActionTypes.PostBack, "Click Here", null, "Click Here", "openUrl", "bam?id=rpa_new_request&type=enhancement", null)
+							 } };
+						return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions
 						{
-							Prompt = MessageFactory.Text("To Request an Enhancement. "),
+							Prompt = (Activity)ChoiceFactory.SuggestedAction(options, "To Request an Enhancement")
+							/*Prompt = MessageFactory.Text("To Request an Enhancement. "),
 							Choices = new List<Choice> { new Choice
 							{
-								Value = "https://bayviewdev.service-now.com/bam?id=rpa_new_request&type=enhancement",
-								Action = new CardAction(ActionTypes.PostBack, "Click Here", null, "Click Here", "openUrl", "https://bayviewdev.service-now.com/bam?id=rpa_new_request&type=enhancement", null)
-							 } }
+								Value = "bam?id=rpa_new_request&type=enhancement",
+								Action = new CardAction(ActionTypes.PostBack, "Click Here", null, "Click Here", "openUrl", "bam?id=rpa_new_request&type=enhancement", null)
+							 } }*/
 						}, cancellationToken);
+					case "Submit a New Idea":
+						processDetails.Action = string.Empty;
+						return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions
+						{
+							Prompt = (Activity)ChoiceFactory.SuggestedAction(new List<Choice> { new Choice
+							{
+								Value = "bam?id=sc_cat_item&sys_id=a41ac289db7c6f0004b27709af9619a3",
+								Action = new CardAction(ActionTypes.PostBack, "Click Here", null, "Click Here", "openUrl", "bam?id=sc_cat_item&sys_id=a41ac289db7c6f0004b27709af9619a3", null)
+							 } }, "To Submit an Idea")
+							
+						}, cancellationToken);
+						
 					case "Done":
 						processDetails.Action = "done";
 						return await stepContext.ReplaceDialogAsync(nameof(MainDialog), processDetails, cancellationToken);
 					//this happen if an exception
-					case "rpaSupport":
+					case "RPASupport@bayview.com":
 						processDetails.Action = string.Empty;
 						return await stepContext.ReplaceDialogAsync(nameof(MainDialog), processDetails, cancellationToken);
 					//if type something instead of clicking an option
@@ -305,25 +325,31 @@ namespace BamChatBot.Dialogs
 		private async Task<DialogTurnResult> ContinueStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
 		{
 			var processDetails = this.processDetails;
+			processDetails.Action = string.Empty;
 			var option = stepContext.Result.ToString();
 			if (option == "Yes")
 			{
+				var choices = new List<Choice> { new Choice
+							{
+								Value = "rpaSupport",
+								Action = new CardAction(ActionTypes.PostBack, "Click Here", null, "Click Here", "openEmail", "RPASupport@bayview.com", null)
+							 } };
 				var rpaService = new RPAService();
 				var rpaSupport = rpaService.GetRPASupportOption();
-				return await stepContext.PromptAsync(nameof(ChoicePrompt), new PromptOptions
+				return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions
 				{
-					Prompt = MessageFactory.Text("To Contact RPA Support. "),
+					Prompt = (Activity)ChoiceFactory.SuggestedAction(choices, "To Contact RPA Support.")
+					/*Prompt = MessageFactory.Text("To Contact RPA Support. "),
 					Choices = new List<Choice> { new Choice
 							{
 								Value = "rpaSupport",
 								Action = new CardAction(ActionTypes.PostBack, "Click Here", null, "Click Here", "openEmail", "RPASupport@bayview.com", null)
-							 } }
+							 } }*/
 
 				}, cancellationToken);
 			}
 			else
 			{
-				processDetails.Action = string.Empty;
 				return await stepContext.ReplaceDialogAsync(InitialDialogId, processDetails, cancellationToken);
 			}
 
