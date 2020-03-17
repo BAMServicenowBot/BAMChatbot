@@ -56,14 +56,18 @@ namespace BamChatBot.Dialogs
 			if (processes.Count > 0)
 			{
 				var rpaService = new RPAService();
-				var _user = await _userAccessor.GetAsync(stepContext.Context, () => new User(), cancellationToken);
-				var result = rpaService.GetListOfProcess(processes, _user.LastIndex);
+				//var _user = await _userAccessor.GetAsync(stepContext.Context, () => new User(), cancellationToken);
+				var response = rpaService.GetUser(stepContext.Context.Activity.Conversation.Id);
+				var user = JsonConvert.DeserializeObject<List<User>>(response.Content);
+				var result = rpaService.GetListOfProcess(processes, user[0].u_last_index);
 				var choices = result.Choices;
 				var rpaSupportChoice = rpaService.GetRPASupportOption();
 				choices.Add(rpaSupportChoice);
 				//save index
-				_user.LastIndex = result.LastIndex;
-				await this._userAccessor.SetAsync(stepContext.Context, _user, cancellationToken);
+				user[0].u_last_index = result.LastIndex;
+				rpaService.UpdateUser(user[0]);
+				//_user.u_last_index = result.LastIndex;
+				//await this._userAccessor.SetAsync(stepContext.Context, _user, cancellationToken);
 
 				return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions
 				{
@@ -84,14 +88,19 @@ namespace BamChatBot.Dialogs
 
 		private async Task<DialogTurnResult> ShowRunningProcessStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
 		{
-
+			var rpaService = new RPAService();
 			var processDetails = (ProcessDetails)stepContext.Options;
 			var result = stepContext.Result.ToString();
-			var _user = await _userAccessor.GetAsync(stepContext.Context, () => new User(), cancellationToken);
+			//var _user = await _userAccessor.GetAsync(stepContext.Context, () => new User(), cancellationToken);
+			var _response = rpaService.GetUser(stepContext.Context.Activity.Conversation.Id);
+			var user = JsonConvert.DeserializeObject<List<User>>(_response.Content);
 			if (result == "RPASupport@bayview.com")
 			{
-				_user.LastIndex = 0;
-				await _userAccessor.SetAsync(stepContext.Context, _user, cancellationToken);
+				//save index
+				user[0].u_last_index = 0;
+				rpaService.UpdateUser(user[0]);
+				//_user.u_last_index = 0;
+				//await _userAccessor.SetAsync(stepContext.Context, _user, cancellationToken);
 				processDetails.Action = string.Empty;
 				return await stepContext.ReplaceDialogAsync(nameof(MainDialog), processDetails, cancellationToken);
 			}
@@ -102,13 +111,15 @@ namespace BamChatBot.Dialogs
 			}
 			else
 			{
-				var rpaService = new RPAService();
 				processDetails.ProcessSelected = rpaService.GetSelectedProcess(processDetails.Processes, result);
 				//check if a process was selected, or something was written
 				if (!string.IsNullOrEmpty(processDetails.ProcessSelected.Sys_id))
 				{
-					_user.LastIndex = 0;
-					await _userAccessor.SetAsync(stepContext.Context, _user, cancellationToken);
+					//save index
+					user[0].u_last_index = 0;
+					rpaService.UpdateUser(user[0]);
+					//_user.u_last_index = 0;
+					//await _userAccessor.SetAsync(stepContext.Context, _user, cancellationToken);
 					var apiRequest = new APIRequest();
 
 					var jobIds = new List<string>();

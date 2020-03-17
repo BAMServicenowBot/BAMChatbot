@@ -116,6 +116,29 @@ namespace BamChatBot.Services
 
 		}
 
+		internal void UpdateUser(User user)
+		{
+			var url = "https://bayviewdev.service-now.com/api/now/table/u_chatbot_user_state/" + user.sys_id;
+			HttpClient client = new HttpClient();
+			client.BaseAddress = new Uri(url);
+			
+			AddAuthorization(client);
+
+			// Add an Accept header for JSON format.
+			client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+			var content = new StringContent(JsonConvert.SerializeObject(new User { u_last_index = user.u_last_index}), Encoding.UTF8, "application/json");
+			HttpResponseMessage response = client.PutAsync(url, content).Result;
+				var obj = response.Content.ReadAsStringAsync();
+				//get rid of {"result":} wrapper from response
+				var result = ClearResponse(obj.Result);
+				/*apiResponse = new APIResponse
+				{
+					Content = result,
+					IsSuccess = response.IsSuccessStatusCode
+				};*/
+			
+		}
+
 		internal APIResponse ProcessStatus(APIRequest data)
 		{
 			var apiPath = GetApiPath();
@@ -180,7 +203,66 @@ namespace BamChatBot.Services
 			return apiResponse;
 		}
 
-		internal TopProcess GetListOfProcess(List<ProcessModel> processes, int lastIdx)
+		internal void SaveUser(User user)
+		{
+			
+		    var url = "https://bayviewdev.service-now.com/api/now/table/u_chatbot_user_state";
+			HttpClient client = new HttpClient();
+			client.BaseAddress = new Uri(url);
+			// var urlParameters = "?user=" + data.UserId + "&sys_id=" + data.Sys_id;
+			//add basic authorization
+			AddAuthorization(client);
+			var json = JsonConvert.SerializeObject(user);
+			var content = new StringContent(json, Encoding.UTF8, "application/json");
+			var response = client.PostAsync(url, content).Result;
+			var obj = response.Content.ReadAsStringAsync();
+
+			//get rid of {"result":} wrapper from response
+			/*var result = ClearResponse(obj.Result);
+			var apiResponse = new APIResponse
+			{
+				Content = result,
+				IsSuccess = response.IsSuccessStatusCode
+			};*/
+
+		}
+
+		internal APIResponse GetUser(string conversationId)
+		{
+			var user = new User();
+			//get user first name  
+			var apiPath = GetApiPath();
+			var url = "https://bayviewdev.service-now.com/api/now/table/u_chatbot_user_state";
+			
+			var urlParameters = "?sysparm_query=u_conversation_id%3D" + conversationId;
+
+			HttpClient client = new HttpClient();
+			client.BaseAddress = new Uri(url);
+			//get credentials
+
+			//add basic authorization
+			AddAuthorization(client);
+
+			// Add an Accept header for JSON format.
+			client.DefaultRequestHeaders.Accept.Add(
+			new MediaTypeWithQualityHeaderValue("application/json"));
+
+			// List data response.
+			HttpResponseMessage response = client.GetAsync(urlParameters).Result;
+
+			var obj = response.Content.ReadAsStringAsync();
+			//get rid of {"result":} wrapper from response
+			var result = ClearResponse(obj.Result);
+			var apiResponse = new APIResponse
+			{
+				Content = result,
+				IsSuccess = response.IsSuccessStatusCode
+			};
+
+			return apiResponse;
+		}
+
+			internal TopProcess GetListOfProcess(List<ProcessModel> processes, int lastIdx)
 		{
 			var tempProcesses = new List<ProcessModel>();
 			//test

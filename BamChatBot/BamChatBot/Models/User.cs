@@ -13,9 +13,12 @@ namespace BamChatBot.Models
     public class User
     {
         public string UserId { get; set; }
-        public string Name { get; set; }
+		public string u_user { get; set; }
+		public string Name { get; set; }
         public string Error { get; set; }
-		public int LastIndex { get; set; }
+		public int u_last_index { get; set; }
+		public string u_conversation_id { get; set; }
+		public string sys_id { get; set; }
 
 
 		internal User GetUser(string userId)

@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using BamChatBot.Bots;
 using BamChatBot.Dialogs;
 using BamChatBot.Models;
+using BamChatBot.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Integration.AspNet.Core;
@@ -81,8 +82,11 @@ namespace BamChatBot.Controllers
             // If you encounter permission-related errors when sending this message, see
             // https://aka.ms/BotTrustServiceUrl
             MicrosoftAppCredentials.TrustServiceUrl(serviceUrl);
-			var user = await((DialogBot<MainDialog>)_bot)._userAccessor.GetAsync(turnContext, () => new User());
-			if (user.UserId == _processStatus.ChatbotUser)
+			//var user = await((DialogBot<MainDialog>)_bot)._userAccessor.GetAsync(turnContext, () => new User());
+			var rpaService = new RPAService();
+			var response = rpaService.GetUser(turnContext.Activity.Conversation.Id);
+			var user = JsonConvert.DeserializeObject<List<User>>(response.Content);
+			if (user[0].u_user == _processStatus.ChatbotUser)
 			{
 				var message = MessageFactory.Text("Process " + _processStatus.Process + " has finished with following status." + Environment.NewLine +
 				"Status: " + _processStatus.State + Environment.NewLine +

@@ -16,6 +16,7 @@ using BamChatBot.CognitiveModels;
 using BamChatBot.Models;
 using Microsoft.Bot.Builder.Dialogs.Choices;
 using BamChatBot.Services;
+using Newtonsoft.Json;
 
 namespace BamChatBot.Dialogs
 {
@@ -58,7 +59,7 @@ namespace BamChatBot.Dialogs
 
 		private async Task<DialogTurnResult> IntroStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
 		{
-
+			
 			//to continue the conversation
 			if (stepContext.Options != null)
 			{
@@ -220,7 +221,10 @@ namespace BamChatBot.Dialogs
 
 		private async Task<DialogTurnResult> FinalStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
 		{
-			var _user = await _userAccessor.GetAsync(stepContext.Context, () => new User(), cancellationToken);
+			var rpaService = new RPAService();
+			var result = rpaService.GetUser(stepContext.Context.Activity.Conversation.Id);
+			var user = JsonConvert.DeserializeObject<List<User>>(result.Content);
+			//var _user = await _userAccessor.GetAsync(stepContext.Context, () => new User(), cancellationToken);
 
 			var option = string.Empty;
 			try
@@ -232,7 +236,17 @@ namespace BamChatBot.Dialogs
 			{
 				option = stepContext.Result.ToString();
 			}
-			this.processDetails.User = _user;
+			if(this.processDetails.User != null)
+			{
+				this.processDetails.User.UserId = user[0].u_user;
+			}
+			else
+			{
+				this.processDetails.User = new User
+				{
+					UserId = user[0].u_user
+				};
+			}
 			if (!string.IsNullOrEmpty(option))
 			{
 				switch (option)
