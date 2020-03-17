@@ -98,7 +98,7 @@ namespace BamChatBot.Controllers
 					{
 						new CardAction()
 						{
-							Value = "continue",
+							Value = "ProcessCompletionDone",
 							Type = ActionTypes.PostBack,
 							Title = "Click Here",
 							Text = "Click Here",

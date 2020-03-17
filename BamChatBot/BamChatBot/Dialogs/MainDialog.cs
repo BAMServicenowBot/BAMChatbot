@@ -120,7 +120,7 @@ namespace BamChatBot.Dialogs
 				//if (stepContext.Result.GetType() == typeof(FoundChoice))
 				//{
 				//var action = (FoundChoice)stepContext.Result;
-				if (action == "Yes")
+				if (action == "Yes" || action == "ProcessCompletionDone")
 				{
 					//set rpa for LUIS to recognize it as RAP intent, and show the list of actions again
 					stepContext.Context.Activity.Text = "rpa";
