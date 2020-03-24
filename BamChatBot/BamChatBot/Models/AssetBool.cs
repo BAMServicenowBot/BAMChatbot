@@ -2,7 +2,7 @@
 {
     public class AssetBool
     {
-        public bool Value { get; set; }
-        public bool Required { get; set; }
+        public bool value { get; set; }
+        public bool required { get; set; }
     }
 }

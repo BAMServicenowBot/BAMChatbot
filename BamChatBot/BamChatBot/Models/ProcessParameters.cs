@@ -2,16 +2,17 @@
 {
 	public class ProcessParameters
 	{
-		public string Sys_id { get; set; }
-		public string ParmName { get; set; }
-		public string ParmType { get; set; }
-		public InputObj InputType { get; set; }
+		public string sys_id { get; set; }
+		public string parmName { get; set; }
+		public string parmType { get; set; }
+		public string value { get; set; }
+		public InputObj inputType { get; set; }
 	}
 
 	public class InputObj
 	{
-		public string Field { get; set; }
-		public string Type { get; set; }
-		public string ValueField { get; set; }
+		public string field { get; set; }
+		public string type { get; set; }
+		public string valueField { get; set; }
 	}
 }

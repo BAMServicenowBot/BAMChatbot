@@ -4,16 +4,16 @@ namespace BamChatBot.Models
 {
     public class Release
     {
-        public string U_key { get; set; }
-        public UOU U_ou { get; set; }
-        public string U_robots { get; set; }
-        public string Sys_id { get; set; }
-        public IList<Asset> Assets { get; set; }
-		public bool Parameters_Required { get; set; }
-		public List<ProcessParameters> Parameters { get; set; }
+        public string u_key { get; set; }
+        public UOU u_ou { get; set; }
+        public string u_robots { get; set; }
+        public string sys_id { get; set; }
+        public IList<Asset> assets { get; set; }
+		public bool parameters_required { get; set; }
+		public List<ProcessParameters> parameters { get; set; }
 		public Release()
 		{
-			Parameters = new List<ProcessParameters>();
+			parameters = new List<ProcessParameters>();
 		}
 
 	}

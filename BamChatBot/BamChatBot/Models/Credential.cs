@@ -2,7 +2,7 @@
 {
     public class Credential
     {
-        public string Value { get; set; }
-        public bool Required { get; set; }
+        public string value { get; set; }
+        public bool required { get; set; }
     }
 }

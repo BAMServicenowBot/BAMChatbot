@@ -24,13 +24,14 @@ namespace BamChatBot.Dialogs
 			_conversationFlow = conversationFlow;
 			AddDialog(new ChoicePrompt(nameof(ChoicePrompt)));
 			AddDialog(new StartProcessErrorDialog());
+			AddDialog(new ParametersProcessDialog());
+			AddDialog(new StartProcessSharedDialog());
 			AddDialog(new WaterfallDialog(nameof(WaterfallDialog), new WaterfallStep[]
 			{
 				IntroStepAsync,
 				ShowProcessStepAsync,
 				ConfirmStartProcessStepAsync,
-				StartProcessStepAsync,
-				StartAnotherProcessStepAsync
+				StartProcessStepAsync
 			}));
 
 			// The initial child Dialog to run.
@@ -114,7 +115,7 @@ namespace BamChatBot.Dialogs
 			}
 			else
 			{
-				
+
 				processDetails.ProcessSelected = rpaService.GetSelectedProcess(processDetails.Processes, result);
 				//check if a process was selected, or something was written
 				if (!string.IsNullOrEmpty(processDetails.ProcessSelected.Sys_id))
@@ -147,8 +148,6 @@ namespace BamChatBot.Dialogs
 			var result = stepContext.Result.ToString();
 			if (result == "Yes")
 			{
-				//get conversationflow obj
-				var conversationFlow = await this._conversationFlow.GetAsync(stepContext.Context, () => new ConversationFlow());
 				var rpaService = new RPAService();
 				//save activity id for when process finish
 				var activityId = stepContext.Context.Activity.Id;
@@ -156,58 +155,41 @@ namespace BamChatBot.Dialogs
 				if (processDetails.ProcessSelected.LastRun.State == "Faulted" || processDetails.ProcessSelected.LastRun.State == "Successful" || processDetails.ProcessSelected.LastRun.State == "Stopped")
 				{
 					//check if process need params
-					if (processDetails.ProcessSelected.Releases.Any(r => r.Parameters_Required == true))
+					if (processDetails.ProcessSelected.Releases.Any(r => r.parameters_required == true))
 					{
-						//group parameters by release
+						//set all params for this conversation to false(maybe was interrupted by a notification)
+						rpaService.DeactivatedConversationFlow(string.Empty, stepContext.Context.Activity.Conversation.Id);
+
+						var count = 0;
 						foreach (var r in processDetails.ProcessSelected.Releases)
 						{
-							if (processDetails.ProcessSelected.ProcessParameters.ContainsKey(r.Sys_id))
+							if (r.parameters_required)
 							{
-								processDetails.ProcessSelected.ProcessParameters[r.Sys_id].AddRange(r.Parameters);
-							}
-							else
-							{
-								processDetails.ProcessSelected.ProcessParameters.Add(r.Sys_id, r.Parameters);
+								foreach (var p in r.parameters)
+								{
+									//save the params
+									var _conversationFlow = new ConversationFlow
+									{
+										u_conversation_id = stepContext.Context.Activity.Conversation.Id,
+										u_release_id = r.sys_id,
+										u_param_name = p.parmName,
+										u_last_question_index = count,
+										u_type = p.parmType,
+										u_active = true
+									};
+
+									rpaService.SaveConversationFlow(_conversationFlow);
+									count++;
+								}
 							}
 						}
 
-						conversationFlow.AskingForParameters = true;
-						conversationFlow.ProcessParameters = processDetails.ProcessSelected.ProcessParameters;
-						conversationFlow.GroupLastIndex = 0;
-						conversationFlow.ParamLastIndex = 0;
-						await this._conversationFlow.SetAsync(stepContext.Context, conversationFlow);
-						return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions
-						{ Prompt = MessageFactory.Text("This process needs input parameters, please enter ") }, cancellationToken);
-
-						//test
-						//restart this Dialog
-						//return await stepContext.ReplaceDialogAsync(nameof(StartProcessDialog), processDetails, cancellationToken);
+						return await stepContext.ReplaceDialogAsync(nameof(ParametersProcessDialog), processDetails, cancellationToken);
 					}
 					else
 					{
-						conversationFlow.AskingForParameters = false;
-						await this._conversationFlow.SetAsync(stepContext.Context, conversationFlow);
-						var response = rpaService.StartProcess(processDetails.ProcessSelected);
-						var error = false;
-						if (string.IsNullOrEmpty(response.Content) || !response.IsSuccess)
-						{
-							error = true;
-						}
-						if (error)
-						{
-							return await stepContext.ReplaceDialogAsync(nameof(StartProcessErrorDialog), processDetails, cancellationToken);
-						}
-						else
-						{
-							processDetails.Jobs = JsonConvert.DeserializeObject<List<Job>>(response.Content);
+						return await stepContext.ReplaceDialogAsync(nameof(StartProcessSharedDialog), cancellationToken);
 
-							return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions
-							{
-								Prompt = (Activity)ChoiceFactory.SuggestedAction(ChoiceFactory.ToChoices(new List<string> { "Yes", "No" }), processDetails.ProcessSelected.Name + " process  has started, you will be notified when it finishes. Do you want to run another process?")
-								/*Prompt = MessageFactory.Text(processDetails.ProcessSelected.Name + " process  has started, you will be notified when it finishes. Do you want to run another process?"),
-								Choices = ChoiceFactory.ToChoices(new List<string> { "Yes", "No" })*/
-							}, cancellationToken);
-						}
 					}
 				}
 				else
@@ -217,7 +199,7 @@ namespace BamChatBot.Dialogs
 					return await stepContext.ReplaceDialogAsync(nameof(MainDialog), processDetails, cancellationToken);
 				}
 			}
-			else if(result == "No")//when no is selected
+			else if (result == "No")//when no is selected
 			{
 				processDetails.Action = string.Empty;
 				return await stepContext.ReplaceDialogAsync(nameof(MainDialog), processDetails, cancellationToken);
@@ -228,34 +210,6 @@ namespace BamChatBot.Dialogs
 				processDetails.Action = string.Empty;
 				return await stepContext.ReplaceDialogAsync(nameof(MainDialog), null, cancellationToken);
 			}
-		}
-
-		private async Task<DialogTurnResult> StartAnotherProcessStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
-		{
-			var processDetails = (ProcessDetails)stepContext.Options;
-
-			var action = stepContext.Result.ToString();
-			if (action == "Yes")
-			{
-				//restart this Dialog
-				return await stepContext.ReplaceDialogAsync(nameof(StartProcessDialog), processDetails, cancellationToken);
-			}
-			else if(action == "No")//go back to main Dialog
-			{
-				processDetails.Action = string.Empty;
-				return await stepContext.ReplaceDialogAsync(nameof(MainDialog), processDetails, cancellationToken);
-			}
-			else//go back to main Dialog with null
-			{
-				processDetails.Action = string.Empty;
-				return await stepContext.ReplaceDialogAsync(nameof(MainDialog), null, cancellationToken);
-			}
-		}
-
-		private static async Task<DialogTurnResult> FillOutParameters(WaterfallStepContext stepContext, ProcessParameters pp)
-		{
-			return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions
-			{ Prompt = MessageFactory.Text("Enter " + pp.ParmName) });
 		}
 
 	}

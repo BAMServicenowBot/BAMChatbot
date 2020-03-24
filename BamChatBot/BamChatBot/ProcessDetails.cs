@@ -17,6 +17,7 @@ namespace BamChatBot
         public string Error { get; set; }
         public List<Job> Jobs { get; set; }
 		public bool LoadMore { get; set; }
+		public ConversationFlow CurrentQuestion { get; set; }
 		public ProcessDetails()
         {
             Processes = new List<ProcessModel>();

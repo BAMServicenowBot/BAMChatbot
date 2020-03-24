@@ -35,13 +35,13 @@ namespace BamChatBot.Services
 		internal void AddAuthorization(HttpClient client)
 		{
 			//get credentials
-			
+
 			var credentials = Convert.ToBase64String(Encoding.ASCII.GetBytes(string.Format("{0}:{1}", this.UserName, this.Pass)));
 			//add basic authorization
 			client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", credentials);
 		}
 
-		internal APIResponse GetApiResult(string endPoint, string  userId)
+		internal APIResponse GetApiResult(string endPoint, string userId)
 		{
 			var user = new User();
 			//get user first name  
@@ -76,8 +76,81 @@ namespace BamChatBot.Services
 			return apiResponse;
 		}
 
+		internal APIResponse StartProcessWithParams(ProcessModel processSelected)
+		{
+			var apiPath = GetApiPath();
+			var url = apiPath + "startProcessWithParams";
+			HttpClient client = new HttpClient();
+			client.BaseAddress = new Uri(url);
+			// var urlParameters = "?user=" + data.UserId + "&sys_id=" + data.Sys_id;
+			//add basic authorization
+			AddAuthorization(client);
+			var content = new StringContent(JsonConvert.SerializeObject(processSelected), Encoding.UTF8, "application/json");
+			var response = client.PostAsync(url, content).Result;
+			var obj = response.Content.ReadAsStringAsync();
+
+			//get rid of {"result":} wrapper from response
+			var result = ClearResponse(obj.Result);
+			var apiResponse = new APIResponse
+			{
+				Content = result,
+				IsSuccess = response.IsSuccessStatusCode
+			};
+
+			return apiResponse;
+		}
+
+		internal void DeactivatedConversationFlow(string sys_Id, string ConversationId)
+		{
+			//get user first name  
+			var apiPath = GetApiPath();
+			var url = apiPath + "putConversationFlow";
+			var urlParameters = "?flow_sys_id=" + sys_Id + "&conv_sys_id=" + ConversationId;
+
+			HttpClient client = new HttpClient();
+			client.BaseAddress = new Uri(url);
+			//get credentials
+
+			//add basic authorization
+			AddAuthorization(client);
+
+			// Add an Accept header for JSON format.
+			client.DefaultRequestHeaders.Accept.Add(
+			new MediaTypeWithQualityHeaderValue("application/json"));
+
+			// List data response.
+			HttpResponseMessage response = client.GetAsync(urlParameters).Result;
+
+		}
+
+		internal APIResponse GetConversationFlowInputs(string convId, string releaseId)
+		{
+			var apiPath = GetApiPath();
+			var url = apiPath + "getProcessParams";
+			HttpClient client = new HttpClient();
+			client.BaseAddress = new Uri(url);
+			var urlParameters = "?release_sys_id=" + releaseId + "&conv_sys_id=" + convId;
+			//add basic authorization
+			AddAuthorization(client);
+			// Add an Accept header for JSON format.
+			client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+			HttpResponseMessage response = client.GetAsync(urlParameters).Result;
+			var obj = response.Content.ReadAsStringAsync();
+			//get rid of {"result":} wrapper from response
+			var result = ClearResponse(obj.Result);
+			var apiResponse = new APIResponse
+			{
+				Content = result,
+				IsSuccess = response.IsSuccessStatusCode
+			};
+
+			return apiResponse;
+		}
+
 		private string GetApiPath()
 		{
+			
 			var apiPath = "https://bayviewdev.service-now.com/api/baam/bam_chat_bot/";
 			return apiPath;
 		}
@@ -90,7 +163,7 @@ namespace BamChatBot.Services
 			HttpClient client = new HttpClient();
 			client.BaseAddress = new Uri(url);
 			var urlParameters = "?user=" + data.UserId + "&sys_id=" + data.Sys_id;// + "&activity=" + activityId;
-			//add basic authorization
+																				  //add basic authorization
 			AddAuthorization(client);
 
 			// Add an Accept header for JSON format.
@@ -116,27 +189,66 @@ namespace BamChatBot.Services
 
 		}
 
+		internal void DeleteConversationFlowInputs(string conversationId)
+		{
+			var apiResponse = new APIResponse();
+			var apiPath = GetApiPath();
+			var url = apiPath + "deleteConversationFlowInputs";
+			HttpClient client = new HttpClient();
+			client.BaseAddress = new Uri(url);
+			var urlParameters = "?sys_id=" + conversationId;
+			//add basic authorization
+			AddAuthorization(client);
+			// Add an Accept header for JSON format.
+			client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+			try
+			{
+				HttpResponseMessage response = client.GetAsync(urlParameters).Result;
+				var obj = response.Content.ReadAsStringAsync();
+			}
+			catch (Exception ex)
+			{
+				apiResponse.Content = ex.Message;
+			}
+			
+		}
+
+		internal void SaveConversationFlowInput(ConversationFlowInput conversationFlowInput)
+		{
+			var url = "https://bayviewdev.service-now.com/api/now/table/u_chatbot_conversation_flow_inputs";
+			HttpClient client = new HttpClient();
+			client.BaseAddress = new Uri(url);
+
+			//add basic authorization
+			AddAuthorization(client);
+			var json = JsonConvert.SerializeObject(conversationFlowInput);
+			var content = new StringContent(json, Encoding.UTF8, "application/json");
+			var response = client.PostAsync(url, content).Result;
+			var obj = response.Content.ReadAsStringAsync();
+		}
+
 		internal void UpdateUser(User user)
 		{
 			var url = "https://bayviewdev.service-now.com/api/now/table/u_chatbot_user_state/" + user.sys_id;
 			HttpClient client = new HttpClient();
 			client.BaseAddress = new Uri(url);
-			
+
 			AddAuthorization(client);
 
 			// Add an Accept header for JSON format.
 			client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-			var content = new StringContent(JsonConvert.SerializeObject(new User { u_last_index = user.u_last_index}), Encoding.UTF8, "application/json");
+			var content = new StringContent(JsonConvert.SerializeObject(new User { u_last_index = user.u_last_index }), Encoding.UTF8, "application/json");
 			HttpResponseMessage response = client.PutAsync(url, content).Result;
-				var obj = response.Content.ReadAsStringAsync();
-				//get rid of {"result":} wrapper from response
-				var result = ClearResponse(obj.Result);
-				/*apiResponse = new APIResponse
-				{
-					Content = result,
-					IsSuccess = response.IsSuccessStatusCode
-				};*/
-			
+			var obj = response.Content.ReadAsStringAsync();
+			//get rid of {"result":} wrapper from response
+			var result = ClearResponse(obj.Result);
+			/*apiResponse = new APIResponse
+			{
+				Content = result,
+				IsSuccess = response.IsSuccessStatusCode
+			};*/
+
 		}
 
 		internal APIResponse ProcessStatus(APIRequest data)
@@ -193,7 +305,7 @@ namespace BamChatBot.Services
 					var result = ClearResponse(obj.Result);
 					apiResponse = JsonConvert.DeserializeObject<APIResponse>(result);
 				}
-				
+
 			}
 			catch (Exception ex)
 			{
@@ -205,8 +317,7 @@ namespace BamChatBot.Services
 
 		internal void SaveUser(User user)
 		{
-			
-		    var url = "https://bayviewdev.service-now.com/api/now/table/u_chatbot_user_state";
+			var url = "https://bayviewdev.service-now.com/api/now/table/u_chatbot_user_state";
 			HttpClient client = new HttpClient();
 			client.BaseAddress = new Uri(url);
 			// var urlParameters = "?user=" + data.UserId + "&sys_id=" + data.Sys_id;
@@ -233,7 +344,7 @@ namespace BamChatBot.Services
 			//get user first name  
 			var apiPath = GetApiPath();
 			var url = "https://bayviewdev.service-now.com/api/now/table/u_chatbot_user_state";
-			
+
 			var urlParameters = "?sysparm_query=u_conversation_id%3D" + conversationId;
 
 			HttpClient client = new HttpClient();
@@ -262,7 +373,47 @@ namespace BamChatBot.Services
 			return apiResponse;
 		}
 
-			internal TopProcess GetListOfProcess(List<ProcessModel> processes, int lastIdx)
+		internal void SaveConversationFlow(ConversationFlow convFlow)
+		{
+
+			var url = "https://bayviewdev.service-now.com/api/now/table/u_chatbot_conversation_flow";
+			HttpClient client = new HttpClient();
+			client.BaseAddress = new Uri(url);
+
+			//add basic authorization
+			AddAuthorization(client);
+			var json = JsonConvert.SerializeObject(convFlow);
+			var content = new StringContent(json, Encoding.UTF8, "application/json");
+			var response = client.PostAsync(url, content).Result;
+			var obj = response.Content.ReadAsStringAsync();
+		}
+
+		internal APIResponse GetConversationFlow(string conversationId)
+		{
+			var apiPath = GetApiPath();
+			var url = apiPath + "getConversationFlow";
+			HttpClient client = new HttpClient();
+			client.BaseAddress = new Uri(url);
+			var urlParameters = "?conversationId=" + conversationId;
+			//add basic authorization
+			AddAuthorization(client);
+			// Add an Accept header for JSON format.
+			client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+			HttpResponseMessage response = client.GetAsync(urlParameters).Result;
+			var obj = response.Content.ReadAsStringAsync();
+			//get rid of {"result":} wrapper from response
+			var result = ClearResponse(obj.Result);
+			var apiResponse = new APIResponse
+			{
+				Content = result,
+				IsSuccess = response.IsSuccessStatusCode
+			};
+
+			return apiResponse;
+		}
+
+		internal TopProcess GetListOfProcess(List<ProcessModel> processes, int lastIdx)
 		{
 			var tempProcesses = new List<ProcessModel>();
 			//test
@@ -281,26 +432,27 @@ namespace BamChatBot.Services
 			//end test
 			//initialize list of Choices
 			var choices = new List<Choice>();
-			
-			
+
+
 
 			if (processes.Count > 10)
 			{
 				var count = 0;
-				for(var p=lastIdx; p<processes.Count; p++)
+				for (var p = lastIdx; p < processes.Count; p++)
 				{
 					if (count == 10)
 					{
 						lastIdx = p;
 						break;
-					}else if(p== processes.Count - 1)
+					}
+					else if (p == processes.Count - 1)
 					{
 						lastIdx = p;
 					}
 					tempProcesses.Add(processes[p]);
 					count++;
 				}
-				
+
 
 				if (lastIdx != processes.Count - 1)
 				{
@@ -316,11 +468,11 @@ namespace BamChatBot.Services
 			{
 				tempProcesses = processes;
 			}
-		
+
 			foreach (var process in tempProcesses)
 			{
-				var name = process.Name; 
-				if(process.Sys_id != "Load_More")
+				var name = process.Name;
+				if (process.Sys_id != "Load_More")
 				{
 					//name+= " [" + process.LastRun.State + "]";
 				}
@@ -360,5 +512,5 @@ namespace BamChatBot.Services
 
 			};
 		}
-		}
+	}
 }

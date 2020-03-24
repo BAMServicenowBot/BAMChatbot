@@ -141,7 +141,7 @@ namespace BamChatBot.Dialogs
 					{
 						foreach (var release in processDetails.ProcessSelected.Releases)
 						{
-							releaseIds.Add(release.Sys_id);
+							releaseIds.Add(release.sys_id);
 						}
 						apiRequest.Ids = releaseIds;
 						apiRequest.IsJob = false;

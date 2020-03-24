@@ -50,7 +50,7 @@ namespace BamChatBot.Bots
 
 		public override async Task OnTurnAsync(ITurnContext turnContext, CancellationToken cancellationToken = default(CancellationToken))
 		{
-			
+
 			//This calls the rigth handler based on the type of activity received.
 			await base.OnTurnAsync(turnContext, cancellationToken);
 
@@ -98,16 +98,8 @@ namespace BamChatBot.Bots
 			}
 			Logger.LogInformation("Running dialog with Message Activity.");
 
-			var conversationFlow = await this._conversationFlow.GetAsync(turnContext, () => new ConversationFlow());
-			if (conversationFlow.AskingForParameters)
-			{
-				await FillOutParameters(turnContext);
-			}
-			else
-			{
-				// Run the Dialog with the new message Activity.
-				await Dialog.RunAsync(turnContext, ConversationState.CreateProperty<DialogState>("DialogState"), cancellationToken);
-			}
+			// Run the Dialog with the new message Activity.
+			await Dialog.RunAsync(turnContext, ConversationState.CreateProperty<DialogState>("DialogState"), cancellationToken);
 
 		}
 
@@ -142,25 +134,6 @@ namespace BamChatBot.Bots
 			}
 		}
 
-		private async Task FillOutParameters(ITurnContext turnContext)
-		{
-			var conversationFlow = await this._conversationFlow.GetAsync(turnContext, () => new ConversationFlow());
-			//ask the user for input
-			foreach (var g in conversationFlow.ProcessParameters)
-			{
 
-				foreach (var i in g.Value)
-				{
-					await turnContext.SendActivityAsync(MessageFactory.Text("Enter " + i.ParmName));
-				}
-				if (g.Key == conversationFlow.ProcessParameters.LastOrDefault().Key)
-				{
-
-				}
-			}
-			/*await this._userAccessor.SetAsync(turnContext, cacheUser, cancellationToken);
-			await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions
-			{ Prompt = MessageFactory.Text("Enter " + pp.ParmName) });*/
-		}
 	}
 }

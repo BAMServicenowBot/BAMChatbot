@@ -2,6 +2,6 @@
 {
     public class UOU
     {
-        public string U_id { get; set; }
+        public string u_id { get; set; }
     }
 }

@@ -2,7 +2,7 @@
 {
     public class AssetInt
     {
-        public double Value { get; set; }
-        public bool Required { get; set; }
+        public double value { get; set; }
+        public bool required { get; set; }
     }
 }
