@@ -188,7 +188,7 @@ namespace BamChatBot.Dialogs
 					}
 					else
 					{
-						return await stepContext.ReplaceDialogAsync(nameof(StartProcessSharedDialog), cancellationToken);
+						return await stepContext.ReplaceDialogAsync(nameof(StartProcessSharedDialog), processDetails, cancellationToken);
 
 					}
 				}
