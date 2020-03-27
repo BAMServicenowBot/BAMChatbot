@@ -88,12 +88,14 @@ namespace BamChatBot.Models
 			if (!result.IsSuccess)
 			{
 				processDetails.Error = JsonConvert.DeserializeObject<ProcessModel>(result.Content).Error;
+				processDetails.Processes = new List<ProcessModel>();
 			}
 			else
 			{
 				var processes = JsonConvert.DeserializeObject<List<ProcessModel>>(result.Content);
 				processDetails.Processes = processes;
 			}
+			
 		}
 
 	}

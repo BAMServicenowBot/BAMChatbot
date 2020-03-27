@@ -136,8 +136,7 @@ namespace BamChatBot.Dialogs
 			}
 			else
 			{
-				//save input
-
+			
 				var conversationFlowInput = new ConversationFlowInput
 				{
 					u_chatbot_conversation_flow = processDetails.CurrentQuestion.sys_id,
