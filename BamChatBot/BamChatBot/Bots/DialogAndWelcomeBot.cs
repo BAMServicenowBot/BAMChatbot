@@ -37,18 +37,11 @@ namespace BamChatBot.Bots
 				// To learn more about Adaptive Cards, see https://aka.ms/msbot-adaptivecards for morBe details.
 				if (member.Id != turnContext.Activity.Recipient.Id)
 				{
+					var user = new List<User>();
 					var rpaService = new RPAService();
 					var result = rpaService.GetUser(turnContext.Activity.Conversation.Id);
-					var user = JsonConvert.DeserializeObject<List<User>>(result.Content);
-					//var user = await this._userAccessor.GetAsync(turnContext, () => new User());
-					/*if (!string.IsNullOrEmpty(this._user.UserId))
-					{
-						user = user.GetUser(this._user.UserId);
-						var cacheUser = await this._userAccessor.GetAsync(turnContext, () => new User());
-						cacheUser.Name = user.Name;
-						cacheUser.UserId = user.UserId;
-						await this._userAccessor.SetAsync(turnContext, cacheUser, cancellationToken);
-					}*/
+					if (result.IsSuccess)
+						user = JsonConvert.DeserializeObject<List<User>>(result.Content);
 
 					//var _user = user.GetUser();
 					var msg = string.Empty;
