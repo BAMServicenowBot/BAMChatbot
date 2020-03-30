@@ -100,8 +100,8 @@ namespace BamChatBot.Controllers
 						{
 							Value = "ProcessCompletionDone",
 							Type = ActionTypes.PostBack,
-							Title = "Click Here",
-							Text = "Click Here",
+							Title = "Click Here to continue",
+							Text = "Click Here to continue",
 							DisplayText = "Click Here to continue"
 						}
 					}
