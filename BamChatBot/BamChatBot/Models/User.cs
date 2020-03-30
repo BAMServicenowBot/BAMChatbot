@@ -21,7 +21,7 @@ namespace BamChatBot.Models
 		public string sys_id { get; set; }
 
 
-		internal User GetUser(string userId)
+		/*internal User GetUser(string userId)
         {
             var rpaService = new RPAService();
             var result = rpaService.GetApiResult("getUser", userId);
@@ -53,8 +53,8 @@ namespace BamChatBot.Models
             
             //Dispose once all HttpClient calls are complete. This is not necessary if the containing object will be disposed of; for example in this case the HttpClient instance will be disposed automatically when the application terminates so the following call is superfluous.
             client.Dispose();*/
-            return user;
-        }
+          //  return user;
+       // }
 
         internal string GetLoginUserName()
         {

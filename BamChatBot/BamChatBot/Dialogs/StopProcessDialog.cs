@@ -155,7 +155,15 @@ namespace BamChatBot.Dialogs
 				}
 				else
 				{
-					msg = response.Error;
+					if (!string.IsNullOrEmpty(response.Error))
+					{
+						msg = response.Error;
+					}
+					else
+					{
+						msg = response.Message;
+					}
+					
 				}
 
 				await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions

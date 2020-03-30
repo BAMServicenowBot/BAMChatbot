@@ -14,13 +14,14 @@ namespace BamChatBot.Models
 			{
 				"Start Process",
 				"Process Status",
+				"Stop a Process",
 				"Report an Issue",
 				"Request an Enhancement",
 				"Submit a New Idea",
-				"Contact RPA Support",
-				"Stop a Process",
+				"Contact RPA Support"/*,
+				
 				"Start Over",
-				"Done"
+				"Done"*/
 			};
 	
 		}

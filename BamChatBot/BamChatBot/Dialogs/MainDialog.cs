@@ -148,10 +148,16 @@ namespace BamChatBot.Dialogs
 
 						foreach (var option in rpaOptions.Options)
 						{
+							var heroCard  = new HeroCard(option, option, option, new List<CardImage> { }, new List<CardAction> { new CardAction() });
+							var image = string.Empty;
+							if (option== "Contact RPA Support")
+							{
+								image = "https://www.google.org/assets/static/images/logo_googledotorg-171e7482e5523603fc0eed236dd772d8.svg";
+							}
 							choices.Add(new Choice
 							{
 								Value = option,
-								Action = new CardAction(ActionTypes.PostBack, option, null, option, option, value: option, null)
+								Action = new CardAction(ActionTypes.PostBack, option, image, option, option, value: option, null)
 							});
 						}
 

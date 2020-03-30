@@ -150,7 +150,7 @@ namespace BamChatBot.Services
 
 		private string GetApiPath()
 		{
-			
+
 			var apiPath = "https://bayviewdev.service-now.com/api/baam/bam_chat_bot/";
 			return apiPath;
 		}
@@ -211,7 +211,7 @@ namespace BamChatBot.Services
 			{
 				apiResponse.Content = ex.Message;
 			}
-			
+
 		}
 
 		internal void SaveConversationFlowInput(ConversationFlowInput conversationFlowInput)
@@ -340,29 +340,20 @@ namespace BamChatBot.Services
 
 		internal APIResponse GetUser(string conversationId)
 		{
-			var user = new User();
-			//get user first name  
+
 			var apiPath = GetApiPath();
-			var url = "https://bayviewdev.service-now.com/api/now/table/u_chatbot_user_state";
-
-			var urlParameters = "?sysparm_query=u_conversation_id%3D" + conversationId;
-
+			var url = apiPath + "getUser";
 			HttpClient client = new HttpClient();
 			client.BaseAddress = new Uri(url);
-			//get credentials
-
+			var urlParameters = "?conversation_sys_id=" + conversationId;
 			//add basic authorization
 			AddAuthorization(client);
-
 			// Add an Accept header for JSON format.
-			client.DefaultRequestHeaders.Accept.Add(
-			new MediaTypeWithQualityHeaderValue("application/json"));
+			client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
-			// List data response.
 			HttpResponseMessage response = client.GetAsync(urlParameters).Result;
-
 			var obj = response.Content.ReadAsStringAsync();
-			//get rid of {"result":} wrapper from response
+
 			var result = ClearResponse(obj.Result);
 			var apiResponse = new APIResponse
 			{
@@ -371,6 +362,7 @@ namespace BamChatBot.Services
 			};
 
 			return apiResponse;
+
 		}
 
 		internal void SaveConversationFlow(ConversationFlow convFlow)

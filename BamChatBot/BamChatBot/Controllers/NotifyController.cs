@@ -88,10 +88,10 @@ namespace BamChatBot.Controllers
 			var user = JsonConvert.DeserializeObject<List<User>>(response.Content);
 			if (user[0].u_user == _processStatus.ChatbotUser)
 			{
-				var message = MessageFactory.Text("Process " + _processStatus.Process + " has finished with following status." + Environment.NewLine +
+				var message = MessageFactory.Text("Process " + _processStatus.Process + " has finished with following." + Environment.NewLine +
 				"Status: " + _processStatus.State + Environment.NewLine +
 				"Start Time: " + _processStatus.Start + Environment.NewLine +
-				"End Time: " + _processStatus.End+Environment.NewLine+"To continue");
+				"End Time: " + _processStatus.End);
 				message.SuggestedActions = new SuggestedActions
 				{
 					Actions = new List<CardAction>
@@ -102,7 +102,7 @@ namespace BamChatBot.Controllers
 							Type = ActionTypes.PostBack,
 							Title = "Click Here",
 							Text = "Click Here",
-							DisplayText = "Click Here"
+							DisplayText = "Click Here to continue"
 						}
 					}
 				};
