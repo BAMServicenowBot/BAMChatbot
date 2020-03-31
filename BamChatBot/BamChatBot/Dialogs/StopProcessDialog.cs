@@ -58,7 +58,9 @@ namespace BamChatBot.Dialogs
 				//var _user = await _userAccessor.GetAsync(stepContext.Context, () => new User(), cancellationToken);
 				//get last index
 				var response = rpaService.GetUser(stepContext.Context.Activity.Conversation.Id);
-				var user = JsonConvert.DeserializeObject<List<User>>(response.Content);
+				var user = new List<User>();
+				if (response.IsSuccess)
+					user = JsonConvert.DeserializeObject<List<User>>(response.Content);
 				var result = rpaService.GetListOfProcess(processes, user[0].u_last_index);
 				var choices = result.Choices;
 				//add one choice for rpa support
@@ -93,7 +95,9 @@ namespace BamChatBot.Dialogs
 			var processDetails = (ProcessDetails)stepContext.Options;
 			var result = stepContext.Result.ToString();
 			var response = rpaService.GetUser(stepContext.Context.Activity.Conversation.Id);
-			var user = JsonConvert.DeserializeObject<List<User>>(response.Content);
+			var user = new List<User>();
+			if (response.IsSuccess)
+				user = JsonConvert.DeserializeObject<List<User>>(response.Content);
 			//var _user = await _userAccessor.GetAsync(stepContext.Context, () => new User(), cancellationToken);
 			switch (result)
 			{
@@ -163,7 +167,7 @@ namespace BamChatBot.Dialogs
 					{
 						msg = response.Message;
 					}
-					
+
 				}
 
 				await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions

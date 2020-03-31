@@ -61,7 +61,9 @@ namespace BamChatBot.Dialogs
 			{
 				var rpaService = new RPAService();
 				var response = rpaService.GetUser(stepContext.Context.Activity.Conversation.Id);
-				var user = JsonConvert.DeserializeObject<List<User>>(response.Content);
+				var user = new List<User>();
+				if(response.IsSuccess)
+				 user = JsonConvert.DeserializeObject<List<User>>(response.Content);
 				//var _user = await _userAccessor.GetAsync(stepContext.Context, () => new User(), cancellationToken);
 				var result = rpaService.GetListOfProcess(processes, user[0].u_last_index);
 				var choices = result.Choices;
@@ -94,9 +96,11 @@ namespace BamChatBot.Dialogs
 		{
 			var rpaService = new RPAService();
 			var processDetails = (ProcessDetails)stepContext.Options;
+			var user =  new List<User>();
 			var result = stepContext.Result.ToString();
 			var response = rpaService.GetUser(stepContext.Context.Activity.Conversation.Id);
-			var user = JsonConvert.DeserializeObject<List<User>>(response.Content);
+			if (response.IsSuccess)
+				 user = JsonConvert.DeserializeObject<List<User>>(response.Content);
 			//var _user = await _userAccessor.GetAsync(stepContext.Context, () => new User(), cancellationToken);
 			if (result == "RPASupport@bayview.com")
 			{
@@ -159,8 +163,8 @@ namespace BamChatBot.Dialogs
 					{
 						//set all params for this conversation to false(maybe was interrupted by a notification)
 						rpaService.DeactivatedConversationFlow(string.Empty, stepContext.Context.Activity.Conversation.Id);
-
-						var count = 0;
+						rpaService.SaveConversationFlow(processDetails.ProcessSelected, stepContext.Context.Activity.Conversation.Id);
+						/*var count = 0;
 						foreach (var r in processDetails.ProcessSelected.Releases)
 						{
 							if (r.parameters_required)
@@ -182,7 +186,7 @@ namespace BamChatBot.Dialogs
 									count++;
 								}
 							}
-						}
+						}*/
 
 						return await stepContext.ReplaceDialogAsync(nameof(ParametersProcessDialog), processDetails, cancellationToken);
 					}

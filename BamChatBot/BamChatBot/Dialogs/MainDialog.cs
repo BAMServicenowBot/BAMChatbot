@@ -65,6 +65,7 @@ namespace BamChatBot.Dialogs
 			{
 				var txt = "Would you like to do something else related to RPA?";
 				var processDetails = (ProcessDetails)stepContext.Options;
+				processDetails.AttemptCount = 0;
 				var message = string.Empty;
 				switch (processDetails.Action)
 				{
@@ -227,9 +228,11 @@ namespace BamChatBot.Dialogs
 
 		private async Task<DialogTurnResult> FinalStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
 		{
+			var user = new List<User>();
 			var rpaService = new RPAService();
 			var result = rpaService.GetUser(stepContext.Context.Activity.Conversation.Id);
-			var user = JsonConvert.DeserializeObject<List<User>>(result.Content);
+			if (result.IsSuccess)
+				 user = JsonConvert.DeserializeObject<List<User>>(result.Content);
 			//var _user = await _userAccessor.GetAsync(stepContext.Context, () => new User(), cancellationToken);
 
 			var option = string.Empty;
@@ -349,13 +352,14 @@ namespace BamChatBot.Dialogs
 			var option = stepContext.Result.ToString();
 			if (option == "Yes")
 			{
-				var choices = new List<Choice> { new Choice
+				var choices = new List<Choice>(); /*{ new Choice
 							{
 								Value = "rpaSupport",
 								Action = new CardAction(ActionTypes.PostBack, "Click Here", null, "Click Here", "openEmail", "RPASupport@bayview.com", null)
-							 } };
+							 } };*/
 				var rpaService = new RPAService();
 				var rpaSupport = rpaService.GetRPASupportOption();
+				choices.Add(rpaSupport);
 				return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions
 				{
 					Prompt = (Activity)ChoiceFactory.SuggestedAction(choices, "To Contact RPA Support.")

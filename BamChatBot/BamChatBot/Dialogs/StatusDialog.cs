@@ -58,7 +58,9 @@ namespace BamChatBot.Dialogs
 				var rpaService = new RPAService();
 				//var _user = await _userAccessor.GetAsync(stepContext.Context, () => new User(), cancellationToken);
 				var response = rpaService.GetUser(stepContext.Context.Activity.Conversation.Id);
-				var user = JsonConvert.DeserializeObject<List<User>>(response.Content);
+				var user = new List<User>();
+				if (response.IsSuccess)
+					user = JsonConvert.DeserializeObject<List<User>>(response.Content);
 				var result = rpaService.GetListOfProcess(processes, user[0].u_last_index);
 				var choices = result.Choices;
 				var rpaSupportChoice = rpaService.GetRPASupportOption();
@@ -93,7 +95,9 @@ namespace BamChatBot.Dialogs
 			var result = stepContext.Result.ToString();
 			//var _user = await _userAccessor.GetAsync(stepContext.Context, () => new User(), cancellationToken);
 			var _response = rpaService.GetUser(stepContext.Context.Activity.Conversation.Id);
-			var user = JsonConvert.DeserializeObject<List<User>>(_response.Content);
+			var user = new List<User>();
+			if (_response.IsSuccess)
+				user = JsonConvert.DeserializeObject<List<User>>(_response.Content);
 			if (result == "RPASupport@bayview.com")
 			{
 				//save index

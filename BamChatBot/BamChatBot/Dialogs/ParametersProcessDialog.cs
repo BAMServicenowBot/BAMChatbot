@@ -39,9 +39,13 @@ namespace BamChatBot.Dialogs
 			if (result.Count > 0)
 			{
 				processDetails.CurrentQuestion = result[0];
-				if (processDetails.CurrentQuestion.u_last_question_index == 0)
+				if (processDetails.CurrentQuestion.u_last_question_index == 0 && processDetails.AttemptCount==0)
 				{
 					text = "Process " + processDetails.ProcessSelected.Name + " needs input parameters, please start entering them below.";
+				}
+				else if(processDetails.AttemptCount != 0 && processDetails.CurrentQuestion.u_last_question_index == 0)
+				{
+					text = "Input parameters entered are wrong, please re-enter them below.";
 				}
 
 				//delete record from SN
@@ -73,6 +77,7 @@ namespace BamChatBot.Dialogs
 			}
 			
 			var rpaService = new RPAService();
+			//have entered all params
 			if (string.IsNullOrEmpty(processDetails.CurrentQuestion.sys_id))
 			{
 				var inputs = new List<ConversationFlowInput>();
@@ -85,7 +90,7 @@ namespace BamChatBot.Dialogs
 					}
 				}*/
 					//all parameters are entered
-					foreach (var r in processDetails.ProcessSelected.Releases)
+				foreach (var r in processDetails.ProcessSelected.Releases)
 				{
 					if (r.parameters_required)
 					{
@@ -120,7 +125,7 @@ namespace BamChatBot.Dialogs
 						}*/
 					}
 				}
-				var message = string.Empty;
+				/*var message = string.Empty;
 				foreach (var i in inputs)
 				{
 					message += i.paramName + ": " + i.u_value + Environment.NewLine;
@@ -130,7 +135,10 @@ namespace BamChatBot.Dialogs
 				{
 					Prompt = (Activity)ChoiceFactory.SuggestedAction(ChoiceFactory.ToChoices(new List<string> { "Yes", "No" }), "You have entered " +Environment.NewLine+ message + "Is that correct?")
 
-				}, cancellationToken);
+				}, cancellationToken);*/
+				//clear data in SN table
+				rpaService.DeleteConversationFlowInputs(stepContext.Context.Activity.Conversation.Id);
+				return await stepContext.ReplaceDialogAsync(nameof(StartProcessSharedDialog), processDetails, cancellationToken);
 
 
 			}

@@ -9,6 +9,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
+using System.Drawing;
 using System.Threading.Tasks;
 
 namespace BamChatBot.Services
@@ -365,19 +366,42 @@ namespace BamChatBot.Services
 
 		}
 
-		internal void SaveConversationFlow(ConversationFlow convFlow)
+		internal void SaveConversationFlow(ProcessModel ProcessSelected, string conversationId)
 		{
+			var count = 0;
+			foreach (var r in ProcessSelected.Releases)
+			{
+				if (r.parameters_required)
+				{
+					foreach (var p in r.parameters)
+					{
+						//save the params
+						var _conversationFlow = new ConversationFlow
+						{
+							u_conversation_id = conversationId,
+							u_release_id = r.sys_id,
+							u_param_name = p.parmName,
+							u_last_question_index = count,
+							u_type = p.parmType,
+							u_active = true
+						};
 
-			var url = "https://bayviewdev.service-now.com/api/now/table/u_chatbot_conversation_flow";
-			HttpClient client = new HttpClient();
-			client.BaseAddress = new Uri(url);
+						var url = "https://bayviewdev.service-now.com/api/now/table/u_chatbot_conversation_flow";
+						HttpClient client = new HttpClient();
+						client.BaseAddress = new Uri(url);
 
-			//add basic authorization
-			AddAuthorization(client);
-			var json = JsonConvert.SerializeObject(convFlow);
-			var content = new StringContent(json, Encoding.UTF8, "application/json");
-			var response = client.PostAsync(url, content).Result;
-			var obj = response.Content.ReadAsStringAsync();
+						//add basic authorization
+						AddAuthorization(client);
+						var json = JsonConvert.SerializeObject(_conversationFlow);
+						var content = new StringContent(json, Encoding.UTF8, "application/json");
+						var response = client.PostAsync(url, content).Result;
+						var obj = response.Content.ReadAsStringAsync();
+						count++;
+					}
+				}
+			}
+
+			
 		}
 
 		internal APIResponse GetConversationFlow(string conversationId)
@@ -497,6 +521,7 @@ namespace BamChatBot.Services
 
 		internal Choice GetRPASupportOption()
 		{
+			
 			return new Choice
 			{
 				Value = "rpaSupport",//RPASupport@bayview.com
