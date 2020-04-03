@@ -93,7 +93,9 @@ namespace BamChatBot.Controllers
 				var message = MessageFactory.Text("Process " + _processStatus.Process + " has finished with the following." + Environment.NewLine +
 				"Status: " + _processStatus.State + Environment.NewLine +
 				"Start Time: " + _processStatus.Start + Environment.NewLine +
-				"End Time: " + _processStatus.End);
+				"End Time: " + _processStatus.End+Environment.NewLine+
+				"Successful Executions: "+_processStatus.SuccessfulExecutions+Environment.NewLine+
+				"Exceptions: "+_processStatus.Exceptions);
 				message.SuggestedActions = new SuggestedActions
 				{
 					Actions = new List<CardAction>

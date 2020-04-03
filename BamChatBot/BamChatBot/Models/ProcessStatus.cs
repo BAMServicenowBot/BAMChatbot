@@ -13,5 +13,7 @@ namespace BamChatBot.Models
         public DateTime? End { get; set; }
         public string ChatbotUser { get; set; }
 		public string Process { get; set; }
+		public int SuccessfulExecutions { get; set; }
+		public int Exceptions { get; set; }
 	}
 }
