@@ -124,7 +124,10 @@ namespace BamChatBot.Dialogs
 					rpaService.UpdateUser(user[0]);
 					//_user.u_last_index = 0;
 					//await _userAccessor.SetAsync(stepContext.Context, _user, cancellationToken);
-					var apiRequest = new APIRequest();
+					var apiRequest = new APIRequest
+					{
+						ProcessId = processDetails.ProcessSelected.Sys_id
+					};
 
 					var jobIds = new List<string>();
 					var releaseIds = new List<string>();
@@ -161,11 +164,21 @@ namespace BamChatBot.Dialogs
 						text += processDetails.ProcessSelected.Name + " process." + Environment.NewLine;
 						foreach (var item in processSatus)
 						{
+							var include = "Total Transactions Processed: " + item.TotalTransactions + Environment.NewLine +
+								"Run Time: " + item.Runtime + Environment.NewLine;
+							if(item.ProcessType== "procedural")
+							{
+								include = string.Empty;
+							}
 
-							text += "Start Time: " + item.Start + Environment.NewLine +
-								"End Time: " + item.End + Environment.NewLine +
-								"Status: " + item.State + Environment.NewLine;
+							text += /*"Start Time: " + item.Start + Environment.NewLine +
+								"End Time: " + item.End + Environment.NewLine +*/
+								"Status: " + item.State + Environment.NewLine +
+								include+
+								"Total Transactions Successful: " +Convert.ToInt32(item.TotalTransSuccessful) + Environment.NewLine +
+								"Total Exceptions: " + Convert.ToInt32(item.TotalExceptions);
 						}
+						
 					}
 					else
 					{

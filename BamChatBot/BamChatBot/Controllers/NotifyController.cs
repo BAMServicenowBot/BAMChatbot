@@ -90,25 +90,39 @@ namespace BamChatBot.Controllers
 				user = JsonConvert.DeserializeObject<List<User>>(response.Content);
 			if (user[0].u_user == _processStatus.ChatbotUser)
 			{
-				var message = MessageFactory.Text("Process " + _processStatus.Process + " has finished with the following." + Environment.NewLine +
-				"Status: " + _processStatus.State + Environment.NewLine +
-				"Start Time: " + _processStatus.Start + Environment.NewLine +
-				"End Time: " + _processStatus.End+Environment.NewLine+
-				"Successful Executions: "+_processStatus.SuccessfulExecutions+Environment.NewLine+
-				"Exceptions: "+_processStatus.Exceptions);
-				message.SuggestedActions = new SuggestedActions
+				var message = string.Empty;
+				if (_processStatus.IsCompletation)
+				{
+					message = "Process " + _processStatus.Process + " has finished with the following." + Environment.NewLine +
+			"Status: " + _processStatus.State + Environment.NewLine +
+			"Start Time: " + _processStatus.Start + Environment.NewLine +
+			"End Time: " + _processStatus.End + Environment.NewLine +
+			"Successful Executions: " + _processStatus.SuccessfulExecutions + Environment.NewLine +
+			"Exceptions: " + _processStatus.Exceptions;
+				}
+				else
+				{
+					message = "Here is the latest status for " + _processStatus.Process + " process." + Environment.NewLine +
+						"Status: " + _processStatus.State + Environment.NewLine +
+								"Total Transactions Processed: " + _processStatus.TotalTransactions + Environment.NewLine +
+								"Run Time: " + _processStatus.Runtime + Environment.NewLine +
+								"Total Transactions Successful: " + Convert.ToInt32(_processStatus.TotalTransSuccessful) + Environment.NewLine +
+								"Total Exceptions: " + Convert.ToInt32(_processStatus.TotalExceptions);
+				}
+
+				MessageFactory.Text(message).SuggestedActions = new SuggestedActions
 				{
 					Actions = new List<CardAction>
+				{
+					new CardAction()
 					{
-						new CardAction()
-						{
-							Value = "ProcessCompletionDone",
-							Type = ActionTypes.PostBack,
-							Title = "Click Here to continue",
-							Text = "Click Here to continue",
-							DisplayText = "Click Here to continue"
-						}
+						Value = "ProcessCompletionDone",
+						Type = ActionTypes.PostBack,
+						Title = "Click Here to continue",
+						Text = "Click Here to continue",
+						DisplayText = "Click Here to continue"
 					}
+				}
 				};
 				await turnContext.SendActivityAsync(message);
 			}

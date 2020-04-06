@@ -15,5 +15,12 @@ namespace BamChatBot.Models
 		public string Process { get; set; }
 		public int SuccessfulExecutions { get; set; }
 		public int Exceptions { get; set; }
+		public int TotalTransactions { get; set; }
+		public string Runtime { get; set; }
+		public double TotalTransSuccessful { get; set; }
+		public double TotalExceptions { get; set; }
+		public string ProcessType { get; set; }
+		public bool IsCompletation { get; set; }
+
 	}
 }
