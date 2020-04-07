@@ -115,7 +115,8 @@ namespace BamChatBot.Controllers
 								"Total Exceptions: " + Convert.ToInt32(_processStatus.TotalExceptions);
 				}
 
-				MessageFactory.Text(message).SuggestedActions = new SuggestedActions
+				var noti = MessageFactory.Text(message);
+				noti.SuggestedActions = new SuggestedActions
 				{
 					Actions = new List<CardAction>
 				{
@@ -129,7 +130,7 @@ namespace BamChatBot.Controllers
 					}
 				}
 				};
-				await turnContext.SendActivityAsync(message);
+				await turnContext.SendActivityAsync(noti);
 			}
 		}
 	}
