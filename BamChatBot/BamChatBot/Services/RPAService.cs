@@ -156,14 +156,14 @@ namespace BamChatBot.Services
 			return apiPath;
 		}
 
-		internal APIResponse StartProcess(ProcessModel data)
+		internal APIResponse StartProcess(ProcessModel data, string conversationId)
 		{
 			var apiResponse = new APIResponse();
 			var apiPath = GetApiPath();
 			var url = apiPath + "startProcess";
 			HttpClient client = new HttpClient();
 			client.BaseAddress = new Uri(url);
-			var urlParameters = "?user=" + data.UserId + "&sys_id=" + data.Sys_id;// + "&activity=" + activityId;
+			var urlParameters = "?user=" + data.UserId + "&sys_id=" + data.Sys_id+ "&conversationId=" + conversationId;
 																				  //add basic authorization
 			AddAuthorization(client);
 

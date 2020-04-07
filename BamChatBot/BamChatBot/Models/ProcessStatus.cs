@@ -21,6 +21,7 @@ namespace BamChatBot.Models
 		public double TotalExceptions { get; set; }
 		public string ProcessType { get; set; }
 		public bool IsCompletation { get; set; }
+		public string ConversationId { get; set; }
 
 	}
 }

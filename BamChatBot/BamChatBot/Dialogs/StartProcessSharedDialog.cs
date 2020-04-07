@@ -41,12 +41,13 @@ namespace BamChatBot.Dialogs
 				var hasInputParams = false;
 				if (processDetails.ProcessSelected.Releases.Any(r => r.parameters_required == true))
 				{
+					processDetails.ProcessSelected.ConversationId = stepContext.Context.Activity.Conversation.Id;
 					response = rpaService.StartProcessWithParams(processDetails.ProcessSelected);
 					hasInputParams = true;
 				}
 				else
 				{
-					response = rpaService.StartProcess(processDetails.ProcessSelected);
+					response = rpaService.StartProcess(processDetails.ProcessSelected,stepContext.Context.Activity.Conversation.Id);
 
 				}
 

@@ -31,7 +31,7 @@ namespace BamChatBot.Dialogs
 
 			//2nd attempt to start process
 			var rpaService = new RPAService();
-			var response = rpaService.StartProcess(processDetails.ProcessSelected);
+			var response = rpaService.StartProcess(processDetails.ProcessSelected, stepContext.Context.Activity.Conversation.Id);
 			var error = false;
 			if (string.IsNullOrEmpty(response.Content) || !response.IsSuccess)
 			{
