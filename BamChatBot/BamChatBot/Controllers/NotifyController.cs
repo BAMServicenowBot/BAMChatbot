@@ -90,6 +90,12 @@ namespace BamChatBot.Controllers
 				user = JsonConvert.DeserializeObject<List<User>>(response.Content);
 			if (user[0].u_user == _processStatus.ChatbotUser)
 			{
+				var include = "Total Transactions Processed: " + _processStatus.TotalTransactions + Environment.NewLine +
+								"Run Time: " + _processStatus.Runtime + Environment.NewLine;
+				if (_processStatus.ProcessType == "procedural")
+				{
+					include = string.Empty;
+				}
 				var message = string.Empty;
 				if (_processStatus.IsCompletation)
 				{
@@ -102,10 +108,9 @@ namespace BamChatBot.Controllers
 				}
 				else
 				{
-					message = "Here is the latest status for " + _processStatus.Process + " process." + Environment.NewLine +
-						"Status: " + _processStatus.State + Environment.NewLine +
-								"Total Transactions Processed: " + _processStatus.TotalTransactions + Environment.NewLine +
-								"Run Time: " + _processStatus.Runtime + Environment.NewLine +
+					message = "Here is the status for " + _processStatus.Process + " process." + Environment.NewLine +
+						//"Status: " + _processStatus.State + Environment.NewLine +
+								include +
 								"Total Transactions Successful: " + Convert.ToInt32(_processStatus.TotalTransSuccessful) + Environment.NewLine +
 								"Total Exceptions: " + Convert.ToInt32(_processStatus.TotalExceptions);
 				}
