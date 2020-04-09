@@ -26,6 +26,7 @@ namespace BamChatBot.Dialogs
 			AddDialog(new StartProcessErrorDialog());
 			AddDialog(new ParametersProcessDialog());
 			AddDialog(new StartProcessSharedDialog());
+			AddDialog(new RobotsDialog());
 			AddDialog(new WaterfallDialog(nameof(WaterfallDialog), new WaterfallStep[]
 			{
 				IntroStepAsync,
@@ -156,10 +157,14 @@ namespace BamChatBot.Dialogs
 				//save activity id for when process finish
 				var activityId = stepContext.Context.Activity.Id;
 				//check if the process can start
-				if (processDetails.ProcessSelected.LastRun.State == "Faulted" || processDetails.ProcessSelected.LastRun.State == "Successful" || processDetails.ProcessSelected.LastRun.State == "Stopped")
+				if (processDetails.ProcessSelected.LastRun.State == "Faulted" || processDetails.ProcessSelected.LastRun.State == "Successful" || processDetails.ProcessSelected.LastRun.State == "Stopped" || string.IsNullOrEmpty(processDetails.ProcessSelected.LastRun.State))
 				{
-					//check if process need params
-					if (processDetails.ProcessSelected.Releases.Any(r => r.parameters_required == true))
+					if (processDetails.ProcessSelected.Releases.Any(r => r.robots.Count > 1))
+					{
+						processDetails.ProcessSelected.FirstBot = true;
+						return await stepContext.ReplaceDialogAsync(nameof(RobotsDialog), processDetails, cancellationToken);
+					}//check if process need params
+					else if (processDetails.ProcessSelected.Releases.Any(r => r.parameters_required == true))
 					{
 						//set all params for this conversation to false(maybe was interrupted by a notification)
 						rpaService.DeactivatedConversationFlow(string.Empty, stepContext.Context.Activity.Conversation.Id);

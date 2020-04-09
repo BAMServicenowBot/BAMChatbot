@@ -18,5 +18,9 @@ namespace BamChatBot.Models
 		public string u_param_name { get; set; }
 		public string u_type { get; set; }
 		public bool u_active { get; set; }
+		public string u_parent_id { get; set; }
+		public bool u_is_object { get; set; }
+		public bool u_is_array { get; set; }
+		
 	}
 }

@@ -163,8 +163,8 @@ namespace BamChatBot.Services
 			var url = apiPath + "startProcess";
 			HttpClient client = new HttpClient();
 			client.BaseAddress = new Uri(url);
-			var urlParameters = "?user=" + data.UserId + "&sys_id=" + data.Sys_id+ "&conversationId=" + conversationId;
-																				  //add basic authorization
+			var urlParameters = "?user=" + data.UserId + "&sys_id=" + data.Sys_id + "&conversationId=" + conversationId;
+			//add basic authorization
 			AddAuthorization(client);
 
 			// Add an Accept header for JSON format.
@@ -375,33 +375,155 @@ namespace BamChatBot.Services
 				{
 					foreach (var p in r.parameters)
 					{
-						//save the params
-						var _conversationFlow = new ConversationFlow
+						if (p.parmType.Contains("Object"))
 						{
-							u_conversation_id = conversationId,
-							u_release_id = r.sys_id,
-							u_param_name = p.parmName,
-							u_last_question_index = count,
-							u_type = p.parmType,
-							u_active = true
-						};
+							foreach(var o in p.obj)
+							{
+								if (o.parmType.Contains("String[]"))
+								{
+									foreach(var a in o.array)
+									{
+										var _conversationFlow = new ConversationFlow
+										{
+											u_conversation_id = conversationId,
+											u_release_id = r.sys_id,
+											u_param_name = a.parmName,
+											u_last_question_index = count,
+											u_type = a.parmType,
+											u_active = true,
+											u_parent_id = a.parentId,
+											u_is_object = true
+											
+										};
 
-						var url = "https://bayviewdev.service-now.com/api/now/table/u_chatbot_conversation_flow";
-						HttpClient client = new HttpClient();
-						client.BaseAddress = new Uri(url);
+										SendConversationFlow(_conversationFlow);
+										count++;
 
-						//add basic authorization
-						AddAuthorization(client);
-						var json = JsonConvert.SerializeObject(_conversationFlow);
-						var content = new StringContent(json, Encoding.UTF8, "application/json");
-						var response = client.PostAsync(url, content).Result;
-						var obj = response.Content.ReadAsStringAsync();
-						count++;
+										if (a.length > 1)
+										{
+											var lenght = 1;
+											while (lenght < a.length)
+											{
+												 _conversationFlow = new ConversationFlow
+												{
+													u_conversation_id = conversationId,
+													u_release_id = r.sys_id,
+													u_param_name = a.parmName,
+													u_last_question_index = count,
+													u_type = a.parmType,
+													u_active = true,
+													u_parent_id = a.parentId,
+													u_is_object = true
+												};
+
+												SendConversationFlow(_conversationFlow);
+												count++;
+												lenght++;
+											}
+										}
+									}
+								}
+								else
+								{
+									var _conversationFlow = new ConversationFlow
+									{
+										u_conversation_id = conversationId,
+										u_release_id = r.sys_id,
+										u_param_name = o.parmName,
+										u_last_question_index = count,
+										u_type = o.parmType,
+										u_active = true,
+										u_parent_id = o.parentId,
+										u_is_object = true
+									};
+
+									SendConversationFlow(_conversationFlow);
+									count++;
+								}
+								
+							}
+
+						}
+						else if(p.parmType.Contains("String[]"))
+						{
+							foreach (var a in p.array)
+							{
+								var _conversationFlow = new ConversationFlow
+								{
+									u_conversation_id = conversationId,
+									u_release_id = r.sys_id,
+									u_param_name = a.parmName,
+									u_last_question_index = count,
+									u_type = a.parmType,
+									u_active = true,
+									u_parent_id = a.parentId,
+									u_is_array = true,
+								
+								};
+
+								SendConversationFlow(_conversationFlow);
+								count++;
+								if (a.length > 1)
+								{
+									var lenght = 1;
+									while (lenght < a.length)
+									{
+										_conversationFlow = new ConversationFlow
+										{
+											u_conversation_id = conversationId,
+											u_release_id = r.sys_id,
+											u_param_name = a.parmName,
+											u_last_question_index = count,
+											u_type = a.parmType,
+											u_active = true,
+											u_parent_id = a.parentId,
+											u_is_array = true
+										};
+
+										SendConversationFlow(_conversationFlow);
+										count++;
+										lenght++;
+									}
+								}
+							}
+						}
+						else
+						{
+							//save the params
+							var _conversationFlow = new ConversationFlow
+							{
+								u_conversation_id = conversationId,
+								u_release_id = r.sys_id,
+								u_param_name = p.parmName,
+								u_last_question_index = count,
+								u_type = p.parmType,
+								u_active = true,
+								u_parent_id = p.parentId
+							};
+
+							SendConversationFlow(_conversationFlow);
+							count++;
+						}
+						
 					}
 				}
 			}
 
-			
+
+		}
+
+		internal void SendConversationFlow(ConversationFlow _conversationFlow)
+		{
+			var url = "https://bayviewdev.service-now.com/api/now/table/u_chatbot_conversation_flow";
+			HttpClient client = new HttpClient();
+			client.BaseAddress = new Uri(url);
+
+			//add basic authorization
+			AddAuthorization(client);
+			var json = JsonConvert.SerializeObject(_conversationFlow);
+			var content = new StringContent(json, Encoding.UTF8, "application/json");
+			var response = client.PostAsync(url, content).Result;
+			var obj = response.Content.ReadAsStringAsync();
 		}
 
 		internal APIResponse GetConversationFlow(string conversationId)
@@ -521,11 +643,11 @@ namespace BamChatBot.Services
 
 		internal Choice GetRPASupportOption()
 		{
-			
+
 			return new Choice
 			{
 				Value = "rpaSupport",//RPASupport@bayview.com
-				Action = new CardAction(ActionTypes.PostBack, "Contact RPA Support", null, "Contact RPA Support", "openEmail", "RPASupport@bayview.com", null)
+				Action = new CardAction(ActionTypes.PostBack, "**Contact RPA Support**", null, "**Contact RPA Support**", "openEmail", "RPASupport@bayview.com", null)
 
 			};
 		}

@@ -1,5 +1,6 @@
 ﻿using BamChatBot.Models;
 using BamChatBot.Services;
+using BamChatBot.Utils;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Builder.Dialogs.Choices;
@@ -50,8 +51,15 @@ namespace BamChatBot.Dialogs
 
 				//delete record from SN
 				rpaService.DeactivatedConversationFlow(processDetails.CurrentQuestion.sys_id, stepContext.Context.Activity.Conversation.Id);
-
-				return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions { Prompt = MessageFactory.Text(text + Environment.NewLine + "Enter: " + processDetails.CurrentQuestion.u_param_name) }, cancellationToken);
+				if (processDetails.CurrentQuestion.u_type.Contains("Bool"))
+				{
+					
+					return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions { Prompt = (Activity)ChoiceFactory.SuggestedAction(ChoiceFactory.ToChoices(new List<string> { "true", "false" }), text + Environment.NewLine + "For " + processDetails.CurrentQuestion.u_param_name.UppercaseFirst()+ " choose one option below.") }, cancellationToken);
+				}
+				else
+				{
+					return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions { Prompt = MessageFactory.Text(text + Environment.NewLine + "Enter " + processDetails.CurrentQuestion.u_param_name.UppercaseFirst()+":") }, cancellationToken);
+				}
 			}
 			else
 			{
@@ -81,14 +89,7 @@ namespace BamChatBot.Dialogs
 			if (string.IsNullOrEmpty(processDetails.CurrentQuestion.sys_id))
 			{
 				var inputs = new List<ConversationFlowInput>();
-				//clean release params
-				/*foreach (var r in processDetails.ProcessSelected.Releases)
-				{
-					for (var p=0; p<r.Parameters.Count; p++)
-					{
-						r.Parameters[p] = new ProcessParameters();
-					}
-				}*/
+		
 					//all parameters are entered
 				foreach (var r in processDetails.ProcessSelected.Releases)
 				{
@@ -102,27 +103,37 @@ namespace BamChatBot.Dialogs
 						
 						foreach(var p in result)
 						{
-							var _param = r.parameters.Find(pp => pp.parmName == p.paramName);
-							_param.value = p.u_value;
-							/*var processParameters = new ProcessParameters
+							if (p.u_is_object)
 							{
-								ParmName = p.paramName,
-								ParamValue = p.u_value,
-								ParmType = p.paramType
-							};
-							r.Parameters.Add(processParameters);
-							processParametersList.Add(processParameters);*/
+								foreach(var o in r.parameters)
+								{
+									var objectParam = o.obj.Find(obj => obj.parmName == p.paramName);
+									if (objectParam!=null)
+									{
+										objectParam.value = p.u_value;
+										break;
+									}
+								}
+							}
+							else if (p.u_is_array)
+							{
+								foreach (var a in r.parameters)
+								{
+									var arrParam = a.array.Find(arr => arr.parmName == p.paramName);
+									if (arrParam != null)
+									{
+										arrParam.value = p.u_value;
+										break;
+									}
+								}
+							}
+							else
+							{
+								var _param = r.parameters.Find(pp => pp.parmName == p.paramName);
+								_param.value = p.u_value;
+							}
+							
 						}
-
-						//set process params
-						/*if (processDetails.ProcessSelected.ProcessParameters.ContainsKey(r.Sys_id))
-						{
-							processDetails.ProcessSelected.ProcessParameters[r.Sys_id].AddRange(processParametersList);
-						}
-						else
-						{
-							processDetails.ProcessSelected.ProcessParameters.Add(r.Sys_id, processParametersList);
-						}*/
 					}
 				}
 				/*var message = string.Empty;

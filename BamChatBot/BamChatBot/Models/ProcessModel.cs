@@ -20,7 +20,9 @@ namespace BamChatBot.Models
 
         public string Error { get; set; }
 		public string ConversationId { get; set; }
-
+		public Robot Bot { get; set; }
+		public bool FirstBot { get; set; }
+		public bool ReEnterBot { get; set; }
 
 		public ProcessModel()
         {

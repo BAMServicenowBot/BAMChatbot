@@ -56,7 +56,7 @@ namespace BamChatBot.Bots
 					{
 						msg = "Welcome to Bayview ChatBot!";
 					}
-					await turnContext.SendActivityAsync(MessageFactory.Text(msg + Environment.NewLine + "What can I help you with today?"), cancellationToken);
+					await turnContext.SendActivityAsync(MessageFactory.Text(msg + Environment.NewLine + "What can I help you with today? You could type "+'"'+ "Menu" + '"' + " for available options."), cancellationToken);
 				}
 
 			}

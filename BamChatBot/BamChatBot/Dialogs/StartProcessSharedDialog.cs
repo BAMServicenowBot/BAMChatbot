@@ -34,7 +34,7 @@ namespace BamChatBot.Dialogs
 			var processDetails = (ProcessDetails)stepContext.Options;
 			/*conversationFlow.AskingForParameters = false;
 			await this._conversationFlow.SetAsync(stepContext.Context, conversationFlow);*/
-			if (processDetails.ProcessSelected.LastRun.State == "Faulted" || processDetails.ProcessSelected.LastRun.State == "Successful" || processDetails.ProcessSelected.LastRun.State == "Stopped")
+			if (processDetails.ProcessSelected.LastRun.State == "Faulted" || processDetails.ProcessSelected.LastRun.State == "Successful" || processDetails.ProcessSelected.LastRun.State == "Stopped" || string.IsNullOrEmpty(processDetails.ProcessSelected.LastRun.State))
 			{
 				var rpaService = new RPAService();
 				var response = new APIResponse();
