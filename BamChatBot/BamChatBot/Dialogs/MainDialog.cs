@@ -347,14 +347,13 @@ namespace BamChatBot.Dialogs
 			var option = stepContext.Result.ToString();
 			if (option == "Yes")
 			{
-				var choices = new List<Choice>(); /*{ new Choice
+				var choices = new List<Choice>
+				{ new Choice
 							{
 								Value = "rpaSupport",
 								Action = new CardAction(ActionTypes.PostBack, "Click Here", null, "Click Here", "openEmail", "RPASupport@bayview.com", null)
-							 } };*/
-				var rpaService = new RPAService();
-				var rpaSupport = rpaService.GetRPASupportOption();
-				choices.Add(rpaSupport);
+							 } };
+				
 				return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions
 				{
 					Prompt = (Activity)ChoiceFactory.SuggestedAction(choices, "To Contact RPA Support.")
