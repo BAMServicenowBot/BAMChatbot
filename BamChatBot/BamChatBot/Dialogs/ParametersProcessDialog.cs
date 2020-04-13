@@ -108,10 +108,31 @@ namespace BamChatBot.Dialogs
 								foreach(var o in r.parameters)
 								{
 									var objectParam = o.obj.Find(obj => obj.parmName == p.paramName);
-									if (objectParam!=null)
+									if (objectParam != null)
 									{
 										objectParam.value = p.u_value;
 										break;
+									}
+									else
+									{
+										foreach(var a in o.obj)
+										{
+											objectParam = a.array.Find(arr => arr.parmName == p.paramName && string.IsNullOrEmpty(arr.value));
+											if (objectParam != null)
+											{
+												objectParam.value = p.u_value;
+												break;
+											}
+											else
+											{
+												objectParam = a.array.Find(arr => a.parmName + '[' + arr.parmName +']'== p.paramName && string.IsNullOrEmpty(arr.value));
+												if (objectParam != null)
+												{
+													objectParam.value = p.u_value;
+													break;
+												}
+											}
+										}
 									}
 								}
 							}
@@ -119,18 +140,30 @@ namespace BamChatBot.Dialogs
 							{
 								foreach (var a in r.parameters)
 								{
-									var arrParam = a.array.Find(arr => arr.parmName == p.paramName);
+									var arrParam = a.array.Find(arr => arr.parmName == p.paramName && string.IsNullOrEmpty(arr.value));
 									if (arrParam != null)
 									{
 										arrParam.value = p.u_value;
 										break;
+									}
+									else
+									{
+										arrParam = a.array.Find(arr => a.parmName+'['+ arr.parmName+']' == p.paramName && string.IsNullOrEmpty(arr.value));
+										if (arrParam != null)
+										{
+											arrParam.value = p.u_value;
+											break;
+										}
 									}
 								}
 							}
 							else
 							{
 								var _param = r.parameters.Find(pp => pp.parmName == p.paramName);
-								_param.value = p.u_value;
+								if (_param != null)
+								{
+									_param.value = p.u_value;
+								}
 							}
 							
 						}

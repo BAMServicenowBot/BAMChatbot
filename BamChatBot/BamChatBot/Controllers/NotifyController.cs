@@ -88,7 +88,7 @@ namespace BamChatBot.Controllers
 			var user = new List<User>();
 			if (response.IsSuccess)
 				user = JsonConvert.DeserializeObject<List<User>>(response.Content);
-			if (user[0].u_user == _processStatus.ChatbotUser && turnContext.Activity.Conversation.Id == _processStatus.ConversationId)
+			if (user[0].u_user == _processStatus.ChatbotUser)// && turnContext.Activity.Conversation.Id == _processStatus.ConversationId)
 			{
 				var include = "Total Transactions Processed: " + _processStatus.TotalTransactions + Environment.NewLine +
 								"Run Time: " + _processStatus.Runtime + Environment.NewLine;

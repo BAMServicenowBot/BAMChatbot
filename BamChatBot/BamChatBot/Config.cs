@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using BamChatBot.Models;
 using Newtonsoft.Json;
+using BamChatBot.Services;
 
 namespace BamChatBot
 {
@@ -75,7 +76,9 @@ namespace BamChatBot
 
         private string GetApiPath()
         {
-            var apiPath = "https://bayviewdev.service-now.com/api/baam/bam_chat_bot/";
+			var rpaService = new RPAService();
+			var instance = rpaService.GetInstanceName();
+            var apiPath = "https://"+instance+".service-now.com/api/baam/bam_chat_bot/";
             return apiPath;
         }
 

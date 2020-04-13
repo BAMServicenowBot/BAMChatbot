@@ -33,6 +33,12 @@ namespace BamChatBot.Services
 			return result;
 		}
 
+		internal string GetInstanceName()
+		{
+			var instance = "bayviewuat";
+			return instance;
+		}
+
 		internal void AddAuthorization(HttpClient client)
 		{
 			//get credentials
@@ -151,8 +157,8 @@ namespace BamChatBot.Services
 
 		private string GetApiPath()
 		{
-
-			var apiPath = "https://bayviewdev.service-now.com/api/baam/bam_chat_bot/";
+			var instance = GetInstanceName();
+			var apiPath = "https://"+instance+".service-now.com/api/baam/bam_chat_bot/";
 			return apiPath;
 		}
 
@@ -217,7 +223,8 @@ namespace BamChatBot.Services
 
 		internal void SaveConversationFlowInput(ConversationFlowInput conversationFlowInput)
 		{
-			var url = "https://bayviewdev.service-now.com/api/now/table/u_chatbot_conversation_flow_inputs";
+			var instance = GetInstanceName();
+			var url = "https://"+instance+".service-now.com/api/now/table/u_chatbot_conversation_flow_inputs";
 			HttpClient client = new HttpClient();
 			client.BaseAddress = new Uri(url);
 
@@ -231,7 +238,8 @@ namespace BamChatBot.Services
 
 		internal void UpdateUser(User user)
 		{
-			var url = "https://bayviewdev.service-now.com/api/now/table/u_chatbot_user_state/" + user.sys_id;
+			var instance = GetInstanceName();
+			var url = "https://"+instance+".service-now.com/api/now/table/u_chatbot_user_state/" + user.sys_id;
 			HttpClient client = new HttpClient();
 			client.BaseAddress = new Uri(url);
 
@@ -318,7 +326,8 @@ namespace BamChatBot.Services
 
 		internal void SaveUser(User user)
 		{
-			var url = "https://bayviewdev.service-now.com/api/now/table/u_chatbot_user_state";
+			var instance = GetInstanceName();
+			var url = "https://"+instance+".service-now.com/api/now/table/u_chatbot_user_state";
 			HttpClient client = new HttpClient();
 			client.BaseAddress = new Uri(url);
 			// var urlParameters = "?user=" + data.UserId + "&sys_id=" + data.Sys_id;
@@ -381,13 +390,19 @@ namespace BamChatBot.Services
 							{
 								if (o.parmType.Contains("String[]"))
 								{
+									var repeatedArr = new List<ProcessParameters>();
 									foreach(var a in o.array)
 									{
+										var parmName = a.parmName;
+										if (a.parmName != o.parmName)
+										{
+											parmName = o.parmName + '[' + a.parmName + ']';
+										}
 										var _conversationFlow = new ConversationFlow
 										{
 											u_conversation_id = conversationId,
 											u_release_id = r.sys_id,
-											u_param_name = a.parmName,
+											u_param_name = parmName,
 											u_last_question_index = count,
 											u_type = a.parmType,
 											u_active = true,
@@ -408,7 +423,7 @@ namespace BamChatBot.Services
 												{
 													u_conversation_id = conversationId,
 													u_release_id = r.sys_id,
-													u_param_name = a.parmName,
+													u_param_name = parmName,
 													u_last_question_index = count,
 													u_type = a.parmType,
 													u_active = true,
@@ -419,7 +434,15 @@ namespace BamChatBot.Services
 												SendConversationFlow(_conversationFlow);
 												count++;
 												lenght++;
+												repeatedArr.Add(a);
 											}
+										}
+									}
+									if (repeatedArr.Count > 0)
+									{
+										foreach(var ra in repeatedArr)
+										{
+											o.array.Add(ra);
 										}
 									}
 								}
@@ -446,13 +469,19 @@ namespace BamChatBot.Services
 						}
 						else if(p.parmType.Contains("String[]"))
 						{
+							var repeatedArr = new List<ProcessParameters>();
 							foreach (var a in p.array)
 							{
+								var parmName = a.parmName;
+								if (a.parmName != p.parmName)
+								{
+									parmName = p.parmName + '[' + a.parmName + ']';
+								}
 								var _conversationFlow = new ConversationFlow
 								{
 									u_conversation_id = conversationId,
 									u_release_id = r.sys_id,
-									u_param_name = a.parmName,
+									u_param_name = parmName,
 									u_last_question_index = count,
 									u_type = a.parmType,
 									u_active = true,
@@ -472,7 +501,7 @@ namespace BamChatBot.Services
 										{
 											u_conversation_id = conversationId,
 											u_release_id = r.sys_id,
-											u_param_name = a.parmName,
+											u_param_name = parmName,
 											u_last_question_index = count,
 											u_type = a.parmType,
 											u_active = true,
@@ -483,7 +512,15 @@ namespace BamChatBot.Services
 										SendConversationFlow(_conversationFlow);
 										count++;
 										lenght++;
+										repeatedArr.Add(a);
 									}
+								}
+							}
+							if (repeatedArr.Count > 0)
+							{
+								foreach(var ra in repeatedArr)
+								{
+									p.array.Add(ra);
 								}
 							}
 						}
@@ -514,7 +551,8 @@ namespace BamChatBot.Services
 
 		internal void SendConversationFlow(ConversationFlow _conversationFlow)
 		{
-			var url = "https://bayviewdev.service-now.com/api/now/table/u_chatbot_conversation_flow";
+			var instance = GetInstanceName();
+			var url = "https://"+instance+".service-now.com/api/now/table/u_chatbot_conversation_flow";
 			HttpClient client = new HttpClient();
 			client.BaseAddress = new Uri(url);
 
