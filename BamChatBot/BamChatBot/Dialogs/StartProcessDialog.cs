@@ -134,7 +134,7 @@ namespace BamChatBot.Dialogs
 					processDetails.ProcessSelected.StartedBy = "chat_bot";
 					return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions
 					{
-						Prompt = (Activity)ChoiceFactory.SuggestedAction(ChoiceFactory.ToChoices(new List<string> { "Yes", "No" }), "You have selected " + processDetails.ProcessSelected.Name + ". Start this process?")
+						Prompt = (Activity)ChoiceFactory.SuggestedAction(ChoiceFactory.ToChoices(new List<string> { "Yes", "No" }), "You have selected " + processDetails.ProcessSelected.Name + ". Would you like to start this process?")
 						/*Prompt = MessageFactory.Text("You have selected " + processDetails.ProcessSelected.Name + ". Start this process?"),
 						Choices = ChoiceFactory.ToChoices(new List<string> { "Yes", "No" })*/
 					}, cancellationToken);

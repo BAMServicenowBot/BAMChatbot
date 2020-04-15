@@ -42,6 +42,7 @@ namespace BamChatBot.Dialogs
 			AddDialog(new ChoicePrompt(nameof(ChoicePrompt)));
 			AddDialog(new StartProcessDialog(_userAccessor, _conversationFlow));
 			AddDialog(new StatusDialog(_userAccessor));
+			AddDialog(new EndConversationDialog());
 			AddDialog(new StopProcessDialog(_userAccessor));
 			AddDialog(new WaterfallDialog(nameof(WaterfallDialog), new WaterfallStep[]
 			{
@@ -77,16 +78,16 @@ namespace BamChatBot.Dialogs
 						return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions { Prompt = MessageFactory.Text(message), }, cancellationToken);
 					case "done":
 
-					case "start":
+					/*case "start":
 						message = processDetails.ProcessSelected.Name + " process  has started, you will be notified when it finishes. Do you want to run another process?";
 						return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions
 						{
 							Prompt = (Activity)ChoiceFactory.SuggestedAction(ChoiceFactory.ToChoices(new List<string> { "Yes", "No" }), message),
 							//Prompt = MessageFactory.Text(message),
 							//Choices = ChoiceFactory.ToChoices(new List<string> { "Yes", "No" })
-						}, cancellationToken);
+						}, cancellationToken);*/
 					case "error":
-						message = processDetails.Error + " " + txt;
+						message = processDetails.Error + Environment.NewLine + txt;
 						return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions
 						{
 							Prompt = (Activity)ChoiceFactory.SuggestedAction(ChoiceFactory.ToChoices(new List<string> { "Yes", "No" }), message),
@@ -128,6 +129,10 @@ namespace BamChatBot.Dialogs
 				}
 				//}
 				//}
+				if (action == "No")
+				{
+					return await stepContext.ReplaceDialogAsync(nameof(EndConversationDialog), processDetails, cancellationToken);
+				}
 			}
 			return await RecognizeText(stepContext, cancellationToken);
 		}
@@ -159,7 +164,7 @@ namespace BamChatBot.Dialogs
 
 						return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions
 						{
-							Prompt = (Activity)ChoiceFactory.HeroCard(choices, "Here is a list of your available commands."),//.ForChannel(stepContext.Context.Activity.ChannelId, choices, "Here is a list of your available commands.", null, ChoiceFactoryOptions.),
+							Prompt = (Activity)ChoiceFactory.HeroCard(choices, "Below is a list of available commands:"),//.ForChannel(stepContext.Context.Activity.ChannelId, choices, "Here is a list of your available commands.", null, ChoiceFactoryOptions.),
 						}, cancellationToken);
 					/*return await stepContext.PromptAsync(nameof(ChoicePrompt), new PromptOptions
 					{

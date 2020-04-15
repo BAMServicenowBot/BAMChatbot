@@ -210,12 +210,12 @@ namespace BamChatBot.Dialogs
 			{
 				//clear data in SN table
 				rpaService.DeleteConversationFlowInputs(stepContext.Context.Activity.Conversation.Id);
-				return await stepContext.ReplaceDialogAsync(nameof(StartProcessSharedDialog), processDetails, cancellationToken);
+				//return await stepContext.ReplaceDialogAsync(nameof(StartProcessSharedDialog), processDetails, cancellationToken);
 			}
-			else
-			{
+			//else
+			//{
 				return await stepContext.ReplaceDialogAsync(nameof(StartProcessSharedDialog), processDetails, cancellationToken);
-			}
+			//}
 		}
 	}
 }
