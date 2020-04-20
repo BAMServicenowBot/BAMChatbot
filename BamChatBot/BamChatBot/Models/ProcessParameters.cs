@@ -15,6 +15,7 @@ namespace BamChatBot.Models
 		public int length { get; set; }
 		public InputObj inputType { get; set; }
 		public bool isObjArray { get; set; }
+		public bool required { get; set; }
 
 		public ProcessParameters()
 		{

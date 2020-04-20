@@ -158,7 +158,7 @@ namespace BamChatBot.Services
 		private string GetApiPath()
 		{
 			var instance = GetInstanceName();
-			var apiPath = "https://"+instance+".service-now.com/api/baam/bam_chat_bot/";
+			var apiPath = "https://" + instance + ".service-now.com/api/baam/bam_chat_bot/";
 			return apiPath;
 		}
 
@@ -224,7 +224,7 @@ namespace BamChatBot.Services
 		internal void SaveConversationFlowInput(ConversationFlowInput conversationFlowInput)
 		{
 			var instance = GetInstanceName();
-			var url = "https://"+instance+".service-now.com/api/now/table/u_chatbot_conversation_flow_inputs";
+			var url = "https://" + instance + ".service-now.com/api/now/table/u_chatbot_conversation_flow_inputs";
 			HttpClient client = new HttpClient();
 			client.BaseAddress = new Uri(url);
 
@@ -239,7 +239,7 @@ namespace BamChatBot.Services
 		internal void UpdateUser(User user)
 		{
 			var instance = GetInstanceName();
-			var url = "https://"+instance+".service-now.com/api/now/table/u_chatbot_user_state/" + user.sys_id;
+			var url = "https://" + instance + ".service-now.com/api/now/table/u_chatbot_user_state/" + user.sys_id;
 			HttpClient client = new HttpClient();
 			client.BaseAddress = new Uri(url);
 
@@ -327,7 +327,7 @@ namespace BamChatBot.Services
 		internal void SaveUser(User user)
 		{
 			var instance = GetInstanceName();
-			var url = "https://"+instance+".service-now.com/api/now/table/u_chatbot_user_state";
+			var url = "https://" + instance + ".service-now.com/api/now/table/u_chatbot_user_state";
 			HttpClient client = new HttpClient();
 			client.BaseAddress = new Uri(url);
 			// var urlParameters = "?user=" + data.UserId + "&sys_id=" + data.Sys_id;
@@ -384,164 +384,167 @@ namespace BamChatBot.Services
 				{
 					foreach (var p in r.parameters)
 					{
-						if (p.parmType.Contains("Object"))
+						if (p.required)
 						{
-							foreach(var o in p.obj)
+							if (p.parmType.Contains("Object"))
 							{
-								if (o.parmType.Contains("String[]"))
+								foreach (var o in p.obj)
 								{
-									var repeatedArr = new List<ProcessParameters>();
-									foreach(var a in o.array)
+									if (o.parmType.Contains("String[]"))
 									{
-										var parmName = a.parmName;
-										if (a.parmName != o.parmName)
+										var repeatedArr = new List<ProcessParameters>();
+										foreach (var a in o.array)
 										{
-											parmName = o.parmName + '[' + a.parmName + ']';
+											var parmName = a.parmName;
+											if (a.parmName != o.parmName)
+											{
+												parmName = o.parmName + '[' + a.parmName + ']';
+											}
+											var _conversationFlow = new ConversationFlow
+											{
+												u_conversation_id = conversationId,
+												u_release_id = r.sys_id,
+												u_param_name = parmName,
+												u_last_question_index = count,
+												u_type = a.parmType,
+												u_active = true,
+												u_parent_id = a.parentId,
+												u_is_object = true
+
+											};
+
+											SendConversationFlow(_conversationFlow);
+											count++;
+
+											if (a.length > 1)
+											{
+												var lenght = 1;
+												while (lenght < a.length)
+												{
+													_conversationFlow = new ConversationFlow
+													{
+														u_conversation_id = conversationId,
+														u_release_id = r.sys_id,
+														u_param_name = parmName,
+														u_last_question_index = count,
+														u_type = a.parmType,
+														u_active = true,
+														u_parent_id = a.parentId,
+														u_is_object = true
+													};
+
+													SendConversationFlow(_conversationFlow);
+													count++;
+													lenght++;
+													repeatedArr.Add(a);
+												}
+											}
 										}
+										if (repeatedArr.Count > 0)
+										{
+											foreach (var ra in repeatedArr)
+											{
+												o.array.Add(ra);
+											}
+										}
+									}
+									else
+									{
 										var _conversationFlow = new ConversationFlow
 										{
 											u_conversation_id = conversationId,
 											u_release_id = r.sys_id,
-											u_param_name = parmName,
+											u_param_name = o.parmName,
 											u_last_question_index = count,
-											u_type = a.parmType,
+											u_type = o.parmType,
 											u_active = true,
-											u_parent_id = a.parentId,
+											u_parent_id = o.parentId,
 											u_is_object = true
-											
 										};
 
 										SendConversationFlow(_conversationFlow);
 										count++;
-
-										if (a.length > 1)
-										{
-											var lenght = 1;
-											while (lenght < a.length)
-											{
-												 _conversationFlow = new ConversationFlow
-												{
-													u_conversation_id = conversationId,
-													u_release_id = r.sys_id,
-													u_param_name = parmName,
-													u_last_question_index = count,
-													u_type = a.parmType,
-													u_active = true,
-													u_parent_id = a.parentId,
-													u_is_object = true
-												};
-
-												SendConversationFlow(_conversationFlow);
-												count++;
-												lenght++;
-												repeatedArr.Add(a);
-											}
-										}
 									}
-									if (repeatedArr.Count > 0)
-									{
-										foreach(var ra in repeatedArr)
-										{
-											o.array.Add(ra);
-										}
-									}
+
 								}
-								else
+
+							}
+							else if (p.parmType.Contains("String[]"))
+							{
+								var repeatedArr = new List<ProcessParameters>();
+								foreach (var a in p.array)
 								{
+									var parmName = a.parmName;
+									if (a.parmName != p.parmName)
+									{
+										parmName = p.parmName + '[' + a.parmName + ']';
+									}
 									var _conversationFlow = new ConversationFlow
 									{
 										u_conversation_id = conversationId,
 										u_release_id = r.sys_id,
-										u_param_name = o.parmName,
+										u_param_name = parmName,
 										u_last_question_index = count,
-										u_type = o.parmType,
+										u_type = a.parmType,
 										u_active = true,
-										u_parent_id = o.parentId,
-										u_is_object = true
+										u_parent_id = a.parentId,
+										u_is_array = true,
+
 									};
 
 									SendConversationFlow(_conversationFlow);
 									count++;
-								}
-								
-							}
+									if (a.length > 1)
+									{
+										var lenght = 1;
+										while (lenght < a.length)
+										{
+											_conversationFlow = new ConversationFlow
+											{
+												u_conversation_id = conversationId,
+												u_release_id = r.sys_id,
+												u_param_name = parmName,
+												u_last_question_index = count,
+												u_type = a.parmType,
+												u_active = true,
+												u_parent_id = a.parentId,
+												u_is_array = true
+											};
 
-						}
-						else if(p.parmType.Contains("String[]"))
-						{
-							var repeatedArr = new List<ProcessParameters>();
-							foreach (var a in p.array)
-							{
-								var parmName = a.parmName;
-								if (a.parmName != p.parmName)
-								{
-									parmName = p.parmName + '[' + a.parmName + ']';
+											SendConversationFlow(_conversationFlow);
+											count++;
+											lenght++;
+											repeatedArr.Add(a);
+										}
+									}
 								}
+								if (repeatedArr.Count > 0)
+								{
+									foreach (var ra in repeatedArr)
+									{
+										p.array.Add(ra);
+									}
+								}
+							}
+							else
+							{
+								//save the params
 								var _conversationFlow = new ConversationFlow
 								{
 									u_conversation_id = conversationId,
 									u_release_id = r.sys_id,
-									u_param_name = parmName,
+									u_param_name = p.parmName,
 									u_last_question_index = count,
-									u_type = a.parmType,
+									u_type = p.parmType,
 									u_active = true,
-									u_parent_id = a.parentId,
-									u_is_array = true,
-								
+									u_parent_id = p.parentId
 								};
 
 								SendConversationFlow(_conversationFlow);
 								count++;
-								if (a.length > 1)
-								{
-									var lenght = 1;
-									while (lenght < a.length)
-									{
-										_conversationFlow = new ConversationFlow
-										{
-											u_conversation_id = conversationId,
-											u_release_id = r.sys_id,
-											u_param_name = parmName,
-											u_last_question_index = count,
-											u_type = a.parmType,
-											u_active = true,
-											u_parent_id = a.parentId,
-											u_is_array = true
-										};
-
-										SendConversationFlow(_conversationFlow);
-										count++;
-										lenght++;
-										repeatedArr.Add(a);
-									}
-								}
-							}
-							if (repeatedArr.Count > 0)
-							{
-								foreach(var ra in repeatedArr)
-								{
-									p.array.Add(ra);
-								}
 							}
 						}
-						else
-						{
-							//save the params
-							var _conversationFlow = new ConversationFlow
-							{
-								u_conversation_id = conversationId,
-								u_release_id = r.sys_id,
-								u_param_name = p.parmName,
-								u_last_question_index = count,
-								u_type = p.parmType,
-								u_active = true,
-								u_parent_id = p.parentId
-							};
 
-							SendConversationFlow(_conversationFlow);
-							count++;
-						}
-						
 					}
 				}
 			}
@@ -552,7 +555,7 @@ namespace BamChatBot.Services
 		internal void SendConversationFlow(ConversationFlow _conversationFlow)
 		{
 			var instance = GetInstanceName();
-			var url = "https://"+instance+".service-now.com/api/now/table/u_chatbot_conversation_flow";
+			var url = "https://" + instance + ".service-now.com/api/now/table/u_chatbot_conversation_flow";
 			HttpClient client = new HttpClient();
 			client.BaseAddress = new Uri(url);
 

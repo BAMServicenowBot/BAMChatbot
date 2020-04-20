@@ -151,10 +151,10 @@ namespace BamChatBot.Dialogs
 				{
 					if (processDetails.ProcessSelected.ReEnterBot)
 					{
-						message = "You have to select at least one Bot."+Environment.NewLine;
+						message = "You have to select at least one Bot." + Environment.NewLine;
 						processDetails.ProcessSelected.ReEnterBot = false;
 					}
-					message += "Select the Bot(s) to trigger " + processDetails.ProcessSelected.Name + " process. For each one select " + '"' + "Yes or No" + '"';
+					message += "Select the Bot(s) to trigger " + processDetails.ProcessSelected.Name + " process." + Environment.NewLine + "For each one select " + '"' + "Yes or No" + '"';
 					processDetails.ProcessSelected.FirstBot = false;
 				}
 				processDetails.ProcessSelected.Bot = bot;
