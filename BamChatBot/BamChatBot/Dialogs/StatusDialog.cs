@@ -63,8 +63,15 @@ namespace BamChatBot.Dialogs
 					user = JsonConvert.DeserializeObject<List<User>>(response.Content);
 				var result = rpaService.GetListOfProcess(processes, user[0].u_last_index);
 				var choices = result.Choices;
-				var rpaSupportChoice = rpaService.GetRPASupportOption();
-				choices.Add(rpaSupportChoice);
+				//var rpaSupportChoice = rpaService.GetRPASupportOption();
+				var mainMenu = new Choice
+				{
+					Value = "menu",//RPASupport@bayview.com
+					Action = new CardAction(ActionTypes.PostBack, "**Main Menu**", null, "**Main Menu**", "**Main Menu**", "menu", null)
+
+				};
+				//choices.Add(rpaSupportChoice);
+				choices.Add(mainMenu);
 				//save index
 				user[0].u_last_index = result.LastIndex;
 				rpaService.UpdateUser(user[0]);
@@ -98,7 +105,7 @@ namespace BamChatBot.Dialogs
 			var user = new List<User>();
 			if (_response.IsSuccess)
 				user = JsonConvert.DeserializeObject<List<User>>(_response.Content);
-			if (result == "RPASupport@bayview.com")
+			if (result.ToLower() == "menu"/*"RPASupport@bayview.com"*/)
 			{
 				//save index
 				user[0].u_last_index = 0;
@@ -106,9 +113,9 @@ namespace BamChatBot.Dialogs
 				//_user.u_last_index = 0;
 				//await _userAccessor.SetAsync(stepContext.Context, _user, cancellationToken);
 				processDetails.Action = string.Empty;
-				return await stepContext.ReplaceDialogAsync(nameof(MainDialog), processDetails, cancellationToken);
+				return await stepContext.ReplaceDialogAsync(nameof(MainDialog), null, cancellationToken);
 			}
-			else if (result == "Load_More")
+			else if (result.ToLower() == "load_more")
 			{
 				processDetails.LoadMore = true;
 				return await stepContext.ReplaceDialogAsync(nameof(StatusDialog), processDetails, cancellationToken);
@@ -164,17 +171,18 @@ namespace BamChatBot.Dialogs
 						text += processDetails.ProcessSelected.Name + " process." + Environment.NewLine;
 						foreach (var item in processSatus)
 						{
-							var include = "Total Transactions Processed: " + item.TotalTransactions + Environment.NewLine +
-								"Run Time: " + item.Runtime + Environment.NewLine;
+							var include = "Total Transactions Processed: " + item.TotalTransactions + Environment.NewLine;/* +
+								"Run Time: " + item.Runtime + Environment.NewLine;*/
 							if(item.ProcessType== "procedural")
 							{
 								include = string.Empty;
 							}
 
-							text += /*"Start Time: " + item.Start + Environment.NewLine +
-								"End Time: " + item.End + Environment.NewLine +*/
-								"Status: " + item.State + Environment.NewLine +
-								include+
+							text += 
+								"Status: " + item.State.label + Environment.NewLine +
+								"Start Time: " + item.Start + Environment.NewLine +
+								"End Time: " + item.End + Environment.NewLine +
+								include +
 								"Total Transactions Successful: " +Convert.ToInt32(item.TotalTransSuccessful) + Environment.NewLine +
 								"Total Exceptions: " + Convert.ToInt32(item.TotalExceptions);
 						}
@@ -205,12 +213,12 @@ namespace BamChatBot.Dialogs
 
 			var processDetails = (ProcessDetails)stepContext.Options;
 			var result = stepContext.Result.ToString();
-			if (result == "Yes")
+			if (result.ToLower() == "yes")
 			{
 				//restart this Dialog
 				return await stepContext.ReplaceDialogAsync(nameof(StatusDialog), processDetails, cancellationToken);
 			}
-			else if (result == "No")//go back to main Dialog
+			else if (result.ToLower() == "no")//go back to main Dialog
 			{
 				processDetails.Action = string.Empty;
 				return await stepContext.ReplaceDialogAsync(nameof(MainDialog), processDetails, cancellationToken);

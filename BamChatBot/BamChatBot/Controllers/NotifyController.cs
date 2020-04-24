@@ -66,8 +66,8 @@ namespace BamChatBot.Controllers
 			var message = MessageFactory.Text("The " + _processStatus.Process + " process has finished. Here is the run status." + Environment.NewLine +
 				"Start Time: " + _processStatus.Start + Environment.NewLine +
 				"End Time: " + _processStatus.End + Environment.NewLine +
-				"Status: " + _processStatus.State);//Exceptions
-												   // Let the caller know proactive messages have been sent
+				"Status: " + _processStatus.State.label);//Exceptions
+														 // Let the caller know proactive messages have been sent
 			return new ContentResult()
 			{
 				Content = "<html><body><h1>Process has finished. User: " + string.Join(",", conversationReferenceActivityIds) + "User from SN " + processStatus.ChatbotUser + "Conversation " + _conversationReferences.Values.Count + "</h1></body></html>",
@@ -99,8 +99,13 @@ namespace BamChatBot.Controllers
 				var message = string.Empty;
 				if (_processStatus.IsCompletation)
 				{
-					message = "Process " + _processStatus.Process + " has finished with the following." + Environment.NewLine +
-			"Status: " + _processStatus.State + Environment.NewLine +
+					var reason = string.Empty;
+					if (_processStatus.State.value == "Faulted")
+					{
+						reason = "Reason: " + _processStatus.Info;
+					}
+					message = "Process " + _processStatus.Process + " has finished with the following updates." + Environment.NewLine +
+			"Status: " + _processStatus.State.label + Environment.NewLine +reason+
 			"Start Time: " + _processStatus.Start + Environment.NewLine +
 			"End Time: " + _processStatus.End + Environment.NewLine +
 			"Successful Executions: " + _processStatus.SuccessfulExecutions + Environment.NewLine +
@@ -109,7 +114,7 @@ namespace BamChatBot.Controllers
 				else
 				{
 					message = "Here is the status for " + _processStatus.Process + " process." + Environment.NewLine +
-						//"Status: " + _processStatus.State + Environment.NewLine +
+								//"Status: " + _processStatus.State + Environment.NewLine +
 								include +
 								"Total Transactions Successful: " + Convert.ToInt32(_processStatus.TotalTransSuccessful) + Environment.NewLine +
 								"Total Exceptions: " + Convert.ToInt32(_processStatus.TotalExceptions);

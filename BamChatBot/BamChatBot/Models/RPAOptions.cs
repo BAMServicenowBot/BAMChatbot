@@ -20,8 +20,10 @@ namespace BamChatBot.Models
 				"Report an Issue",
 				"Request an Enhancement",
 				"Submit a New Idea",
-				"**Contact RPA Support**"/*,
-				
+				"**Contact RPA Support**",
+				"End Chat"/*,
+
+
 				"Start Over",
 				"Done"*/
 			};

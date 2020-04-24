@@ -97,7 +97,9 @@ namespace BamChatBot.Dialogs
 					{
 						//get params
 						var response = rpaService.GetConversationFlowInputs(stepContext.Context.Activity.Conversation.Id, r.sys_id);
-						var result = JsonConvert.DeserializeObject<List<ConversationFlowInput>>(response.Content);
+						var result = new List<ConversationFlowInput>();
+						if(response.IsSuccess)
+						result = JsonConvert.DeserializeObject<List<ConversationFlowInput>>(response.Content);
 						inputs.AddRange(result);
 						var processParametersList = new List<ProcessParameters>();
 						
@@ -206,7 +208,7 @@ namespace BamChatBot.Dialogs
 			var rpaService = new RPAService();
 			var processDetails = (ProcessDetails)stepContext.Options;
 			var result = stepContext.Result.ToString();
-			if (result == "Yes")
+			if (result.ToLower() == "yes")
 			{
 				//clear data in SN table
 				rpaService.DeleteConversationFlowInputs(stepContext.Context.Activity.Conversation.Id);

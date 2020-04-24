@@ -64,33 +64,28 @@ namespace BamChatBot.Dialogs
 			//to continue the conversation
 			if (stepContext.Options != null)
 			{
-				var txt = "Would you like to do something else related to RPA?";
+				var txt = "Would you like to return to Main Menu?";
 				var processDetails = (ProcessDetails)stepContext.Options;
 				processDetails.AttemptCount = 0;
 				var message = string.Empty;
+				var choices = new List<Choice> { new Choice
+							{
+								Value = "Yes",
+								Action = new CardAction(ActionTypes.PostBack, "Main Menu", null, "Main Menu", "Main Menu", "Yes", null)
+							 } };
 				switch (processDetails.Action)
 				{
 					case "default":
-						message = "I am sorry, I cannot help you with that right now but I'm working on it. Please try asking in a different way.";
+						message = "I am sorry, I do not understand your request. Please try asking a different way or type "+'"'+"Menu" + '"' +" for available options.";
 						return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions { Prompt = MessageFactory.Text(message), }, cancellationToken);
 					case "startOver":
 						message = "What can I help you with today?";
 						return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions { Prompt = MessageFactory.Text(message), }, cancellationToken);
-					case "done":
-
-					/*case "start":
-						message = processDetails.ProcessSelected.Name + " process  has started, you will be notified when it finishes. Do you want to run another process?";
-						return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions
-						{
-							Prompt = (Activity)ChoiceFactory.SuggestedAction(ChoiceFactory.ToChoices(new List<string> { "Yes", "No" }), message),
-							//Prompt = MessageFactory.Text(message),
-							//Choices = ChoiceFactory.ToChoices(new List<string> { "Yes", "No" })
-						}, cancellationToken);*/
 					case "error":
 						message = processDetails.Error + Environment.NewLine + txt;
 						return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions
 						{
-							Prompt = (Activity)ChoiceFactory.SuggestedAction(ChoiceFactory.ToChoices(new List<string> { "Yes", "No" }), message),
+							Prompt = (Activity)ChoiceFactory.SuggestedAction(choices, message),
 							//Prompt = MessageFactory.Text(message),
 							//Choices = ChoiceFactory.ToChoices(new List<string> { "Yes", "No" })
 						}, cancellationToken);
@@ -98,7 +93,7 @@ namespace BamChatBot.Dialogs
 						message = txt;
 						return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions
 						{
-							Prompt = (Activity)ChoiceFactory.SuggestedAction(ChoiceFactory.ToChoices(new List<string> { "Yes", "No" }), message)
+							Prompt = (Activity)ChoiceFactory.SuggestedAction(choices, message)
 							//Prompt = MessageFactory.Text(message),
 							//Choices = ChoiceFactory.ToChoices(new List<string> { "Yes", "No" })
 						}, cancellationToken);
@@ -122,17 +117,17 @@ namespace BamChatBot.Dialogs
 				//if (stepContext.Result.GetType() == typeof(FoundChoice))
 				//{
 				//var action = (FoundChoice)stepContext.Result;
-				if (action == "Yes")
+				if (action.ToLower() == "yes")
 				{
 					//set rpa for LUIS to recognize it as RAP intent, and show the list of actions again
 					stepContext.Context.Activity.Text = "rpa";
 				}
 				//}
 				//}
-				if (action == "No")
+				/*if (action == "No")
 				{
 					return await stepContext.ReplaceDialogAsync(nameof(EndConversationDialog), processDetails, cancellationToken);
-				}
+				}*/
 			}
 			return await RecognizeText(stepContext, cancellationToken);
 		}
@@ -176,7 +171,7 @@ namespace BamChatBot.Dialogs
 					default:
 						processDetails.Action = "default";
 						// Catch all for unhandled intents
-						var didntUnderstandMessageText = "I am sorry, I cannot help you with that right now but I'm working on it. Please try asking in a different way.";
+						var didntUnderstandMessageText = "I am sorry, I do not understand your request. Please try asking a different way or type " + '"' + "Menu" + '"' + " for available options.";
 						var didntUnderstandMessage = MessageFactory.Text(didntUnderstandMessageText, didntUnderstandMessageText, InputHints.IgnoringInput);
 						//start this dialog again
 						return await stepContext.NextAsync(processDetails, cancellationToken);//.PromptAsync(nameof(TextPrompt), new PromptOptions { Prompt = didntUnderstandMessage }, cancellationToken);
@@ -258,21 +253,34 @@ namespace BamChatBot.Dialogs
 			}
 			if (!string.IsNullOrEmpty(option))
 			{
-				switch (option)
+				switch (option.ToLower())
 				{
-					case "Start Process":
+					case "start process":
+					case "start":
+					case "restart bot":
+					case "start bot":
 						processDetails.Action = "start";
 						return await stepContext.BeginDialogAsync(nameof(StartProcessDialog), processDetails, cancellationToken);
-					case "Process Status":
+					case "process status":
+					case "status":
+					case "metrics":
 						processDetails.Action = "check status";
 						return await stepContext.BeginDialogAsync(nameof(StatusDialog), processDetails, cancellationToken);
-					case "Stop a Process":
+					case "stop a process":
+					case "stop":
+					case "stop process":
+					case "stop bot":
 						processDetails.Action = "stop";
 						return await stepContext.BeginDialogAsync(nameof(StopProcessDialog), processDetails, cancellationToken);
-					case "Start Over":
+					case "start over":
 						processDetails.Action = "startOver";
 						return await stepContext.ReplaceDialogAsync(nameof(MainDialog), processDetails, cancellationToken);
-					case "Report an Issue":
+					case "report an issue":
+					case "issue":
+					case "report":
+					case "report issue":
+					case "bot failed":
+					case "bot not working":
 						processDetails.Action = string.Empty;
 						var choices = new List<Choice> { new Choice
 							{
@@ -289,15 +297,24 @@ namespace BamChatBot.Dialogs
 								Action = new CardAction(ActionTypes.PostBack, "Click Here", null, "Click Here", "openUrl", "bam?id=rpa_new_request&type=incident", null)
 							 } }*/
 						}, cancellationToken);
-					case "**Contact RPA Support**":
-
+					case "**contact rpa support**":
+					case "contact rpa support":
+					case "rpa support":
+					case "support":
+					case "contact support":
+					case "help":
+					case "need help":
+					case "help needed":
 						return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions
 						{
 							Prompt = (Activity)ChoiceFactory.SuggestedAction(ChoiceFactory.ToChoices(new List<string> { "Yes", "No" }), "You would like to contact RPA Support, is that correct?")
 							/*Prompt = MessageFactory.Text("You would like to contact RPA Support, is that correct?"),
 							Choices = ChoiceFactory.ToChoices(new List<string> { "Yes", "No" })*/
 						}, cancellationToken);
-					case "Request an Enhancement":
+					case "request an enhancement":
+					case "enhancement":
+					case "request":
+					case "new request":
 						processDetails.Action = string.Empty;
 						var options = new List<Choice> { new Choice
 							{
@@ -314,7 +331,12 @@ namespace BamChatBot.Dialogs
 								Action = new CardAction(ActionTypes.PostBack, "Click Here", null, "Click Here", "openUrl", "bam?id=rpa_new_request&type=enhancement", null)
 							 } }*/
 						}, cancellationToken);
-					case "Submit a New Idea":
+					case "submit a new idea":
+					case "new idea":
+					case "idea":
+					case "new project":
+					case "new process":
+					case "project request":
 						processDetails.Action = string.Empty;
 						return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions
 						{
@@ -326,9 +348,14 @@ namespace BamChatBot.Dialogs
 							
 						}, cancellationToken);
 						
-					case "Done":
-						processDetails.Action = "done";
-						return await stepContext.ReplaceDialogAsync(nameof(MainDialog), processDetails, cancellationToken);
+					case "end chat":
+					case "exit":
+					case "exit chat":
+					case "close":
+					case "close chat":
+					case "end":
+						//processDetails.Action = "done";
+						return await stepContext.ReplaceDialogAsync(nameof(EndConversationDialog), processDetails, cancellationToken);
 					//this happen if an exception
 					case "RPASupport@bayview.com":
 						processDetails.Action = string.Empty;
@@ -350,7 +377,7 @@ namespace BamChatBot.Dialogs
 			var processDetails = this.processDetails;
 			processDetails.Action = string.Empty;
 			var option = stepContext.Result.ToString();
-			if (option == "Yes")
+			if (option.ToLower() == "yes")
 			{
 				var choices = new List<Choice>
 				{ new Choice

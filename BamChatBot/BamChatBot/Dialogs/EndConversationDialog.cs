@@ -31,18 +31,18 @@ namespace BamChatBot.Dialogs
 			var processDetails = (ProcessDetails)stepContext.Options;
 			var choices = new List<Choice> { new Choice
 							{
-								Value = "exitChat",
-								Action = new CardAction(ActionTypes.PostBack, "Exit Chat", null, "Exit Chat", "exitChat", "exitChat", null)
+								Value = "yes",
+								Action = new CardAction(ActionTypes.PostBack, "Yes", null, "Yes", "exitChat", "yes", null)
 							 },
 
 				new Choice
 				{
-					Value = "menu",
-					Action = new CardAction(ActionTypes.PostBack, "Menu", null, "Menu", "menu", "menu", null)
+					Value = "no",
+					Action = new CardAction(ActionTypes.PostBack, "No", null, "No", "No", "no", null)
 				} };
 			return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions
 			{
-				Prompt = (Activity)ChoiceFactory.SuggestedAction(choices, "Thank you!")
+				Prompt = (Activity)ChoiceFactory.SuggestedAction(choices, "Would you like to close this Chat window?")
 			}, cancellationToken);
 		}
 
@@ -51,10 +51,14 @@ namespace BamChatBot.Dialogs
 			var processDetails = (ProcessDetails)stepContext.Options;
 			processDetails.Action = string.Empty;
 			var result = stepContext.Result.ToString();
-			if(result== "exitChat")
+			if( result.ToLower() == "yes")
+			{
+				return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions { Prompt = MessageFactory.Text("Welcome back!" + Environment.NewLine + "Type " + '"' + "Menu" + '"' + " for available options.") }, cancellationToken);
+			}
+			/*if(result== "exitChat")
 			{
 				return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions { Prompt = MessageFactory.Text("Welcome back!"+Environment.NewLine+"Type " + '"' + "Menu" + '"' + " for available options.") }, cancellationToken);
-			}
+			//}*/
 			return await stepContext.ReplaceDialogAsync(nameof(MainDialog), null, cancellationToken);
 		}
 		private async Task<DialogTurnResult> FinalStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)

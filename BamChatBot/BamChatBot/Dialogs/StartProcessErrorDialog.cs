@@ -54,7 +54,7 @@ namespace BamChatBot.Dialogs
 
 				return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions
 				{
-					Prompt = (Activity)ChoiceFactory.SuggestedAction(ChoiceFactory.ToChoices(new List<string> { "Yes", "No" }), processDetails.ProcessSelected.Name + " process  has started, you will be notified when it finishes. Do you want to run another process?")
+					Prompt = (Activity)ChoiceFactory.SuggestedAction(ChoiceFactory.ToChoices(new List<string> { "Yes", "No" }), processDetails.ProcessSelected.Name + " process has started and you will be notified when it finishes."+Environment.NewLine+ "Do you want to run another process??")
 					/*Prompt = MessageFactory.Text(processDetails.ProcessSelected.Name + " process  has started, you will be notified when it finishes. Do you want to run another process?"),
 					Choices = ChoiceFactory.ToChoices(new List<string> { "Yes", "No" })*/
 				}, cancellationToken);
@@ -66,12 +66,12 @@ namespace BamChatBot.Dialogs
 			var processDetails = (ProcessDetails)stepContext.Options;
 
 			var action = stepContext.Result.ToString();
-			switch (action)
+			switch (action.ToLower())
 			{
-				case "Yes":
+				case "yes":
 					return await stepContext.ReplaceDialogAsync(nameof(StartProcessDialog), processDetails, cancellationToken);
-				case "RPASupport@bayview.com":
-				case "No":
+				case "rpasupport@bayview.com":
+				case "no":
 					processDetails.Action = string.Empty;
 					return await stepContext.ReplaceDialogAsync(nameof(MainDialog), processDetails, cancellationToken);
 				default:

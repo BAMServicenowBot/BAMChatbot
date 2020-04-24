@@ -99,13 +99,13 @@ namespace BamChatBot.Dialogs
 			if (response.IsSuccess)
 				user = JsonConvert.DeserializeObject<List<User>>(response.Content);
 			//var _user = await _userAccessor.GetAsync(stepContext.Context, () => new User(), cancellationToken);
-			switch (result)
+			switch (result.ToLower())
 			{
-				case "Load_More":
+				case "load_more":
 					processDetails.LoadMore = true;
 					return await stepContext.ReplaceDialogAsync(nameof(StopProcessDialog), processDetails, cancellationToken);
 
-				case "RPASupport@bayview.com":
+				case "rpasupport@bayview.com":
 					//save index
 					user[0].u_last_index = 0;
 					rpaService.UpdateUser(user[0]);
@@ -142,8 +142,9 @@ namespace BamChatBot.Dialogs
 			var msg = string.Empty;
 			var result = stepContext.Result.ToString();
 			var processDetails = (ProcessDetails)stepContext.Options;
+			processDetails.Action = string.Empty;
 			var rpaService = new RPAService();
-			if (result == "Yes")
+			if (result.ToLower() == "yes")
 			{
 				var response = rpaService.StopProcess(processDetails.ProcessSelected.Sys_id);
 				if (response.IsSuccess)
@@ -176,13 +177,13 @@ namespace BamChatBot.Dialogs
 				}, cancellationToken);
 				return await stepContext.ReplaceDialogAsync(nameof(MainDialog), processDetails, cancellationToken);
 			}
-			else if (result == "No")
+			else if (result.ToLower() == "no")
 			{
-				return await stepContext.ReplaceDialogAsync(nameof(StopProcessDialog), processDetails, cancellationToken);
+				return await stepContext.ReplaceDialogAsync(nameof(MainDialog), processDetails, cancellationToken);
 			}
 			else
 			{
-				return await stepContext.ReplaceDialogAsync(nameof(StopProcessDialog), null, cancellationToken);
+				return await stepContext.ReplaceDialogAsync(nameof(MainDialog), null, cancellationToken);
 			}
 
 		}

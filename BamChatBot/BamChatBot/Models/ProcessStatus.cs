@@ -7,7 +7,7 @@ namespace BamChatBot.Models
 {
     public class ProcessStatus
     {
-        public string State { get; set; }
+        public State State { get; set; }
         public string Release { get; set; }
         public DateTime? Start { get; set; }
         public DateTime? End { get; set; }
@@ -22,6 +22,13 @@ namespace BamChatBot.Models
 		public string ProcessType { get; set; }
 		public bool IsCompletation { get; set; }
 		public string ConversationId { get; set; }
+		public string Info { get; set; }
 
+	}
+
+	public class State
+	{
+		public string value { get; set; }
+		public string label { get; set; }
 	}
 }

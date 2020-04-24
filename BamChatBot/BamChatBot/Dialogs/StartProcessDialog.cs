@@ -103,7 +103,7 @@ namespace BamChatBot.Dialogs
 			if (response.IsSuccess)
 				 user = JsonConvert.DeserializeObject<List<User>>(response.Content);
 			//var _user = await _userAccessor.GetAsync(stepContext.Context, () => new User(), cancellationToken);
-			if (result == "RPASupport@bayview.com")
+			if (result.ToLower() == "rpasupport@bayview.com")
 			{
 				//save index
 				user[0].u_last_index = 0;
@@ -113,7 +113,7 @@ namespace BamChatBot.Dialogs
 				processDetails.Action = string.Empty;
 				return await stepContext.ReplaceDialogAsync(nameof(MainDialog), processDetails, cancellationToken);
 			}
-			else if (result == "Load_More")
+			else if (result.ToLower() == "load_more")
 			{
 				processDetails.LoadMore = true;
 				return await stepContext.ReplaceDialogAsync(nameof(StartProcessDialog), processDetails, cancellationToken);
@@ -151,7 +151,7 @@ namespace BamChatBot.Dialogs
 		{
 			var processDetails = (ProcessDetails)stepContext.Options;
 			var result = stepContext.Result.ToString();
-			if (result == "Yes")
+			if (result.ToLower() == "yes")
 			{
 				var rpaService = new RPAService();
 				//save activity id for when process finish
@@ -204,11 +204,11 @@ namespace BamChatBot.Dialogs
 				else
 				{
 					processDetails.Action = "error";
-					processDetails.Error = "Cannot start " + processDetails.ProcessSelected.Name + " because is running already.";
+					processDetails.Error = "Cannot start " + processDetails.ProcessSelected.Name + " because the process is already running.";
 					return await stepContext.ReplaceDialogAsync(nameof(MainDialog), processDetails, cancellationToken);
 				}
 			}
-			else if (result == "No")//when no is selected
+			else if (result.ToLower() == "no")//when no is selected
 			{
 				processDetails.Action = string.Empty;
 				return await stepContext.ReplaceDialogAsync(nameof(MainDialog), processDetails, cancellationToken);

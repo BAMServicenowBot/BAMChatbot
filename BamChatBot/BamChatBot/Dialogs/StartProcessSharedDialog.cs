@@ -86,7 +86,7 @@ namespace BamChatBot.Dialogs
 					processDetails.Jobs = JsonConvert.DeserializeObject<List<Job>>(response.Content);
 					return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions
 					{
-						Prompt = (Activity)ChoiceFactory.SuggestedAction(ChoiceFactory.ToChoices(new List<string> { "Yes", "No" }), processDetails.ProcessSelected.Name + " process  has started, you will be notified when it finishes. Do you want to run another process?")
+						Prompt = (Activity)ChoiceFactory.SuggestedAction(ChoiceFactory.ToChoices(new List<string> { "Yes", "No" }), processDetails.ProcessSelected.Name + "  process has started and you will be notified when it finishes."+Environment.NewLine+" Do you want to run another process?")
 					}, cancellationToken);
 				}
 			}
@@ -94,7 +94,7 @@ namespace BamChatBot.Dialogs
 			{
 				processDetails.AttemptCount = 0;
 				processDetails.Action = "error";
-				processDetails.Error = "Cannot start " + processDetails.ProcessSelected.Name + " because is running already.";
+				processDetails.Error = "Cannot start " + processDetails.ProcessSelected.Name + " because the process is already running.";
 				return await stepContext.ReplaceDialogAsync(nameof(MainDialog), processDetails, cancellationToken);
 			}
 		}
@@ -104,12 +104,12 @@ namespace BamChatBot.Dialogs
 			var processDetails = (ProcessDetails)stepContext.Options;
 
 			var action = stepContext.Result.ToString();
-			if (action == "Yes")
+			if (action.ToLower() == "yes")
 			{
 				//start StartProcessDialog Dialog
 				return await stepContext.ReplaceDialogAsync(nameof(StartProcessDialog), processDetails, cancellationToken);
 			}
-			else if (action == "No")//go back to main Dialog
+			else if (action.ToLower() == "no")//go back to main Dialog
 			{
 				processDetails.Action = string.Empty;
 				return await stepContext.ReplaceDialogAsync(nameof(MainDialog), processDetails, cancellationToken);
