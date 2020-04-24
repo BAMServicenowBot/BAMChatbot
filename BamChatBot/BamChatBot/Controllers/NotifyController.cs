@@ -91,7 +91,9 @@ namespace BamChatBot.Controllers
 			if (user[0].u_user == _processStatus.ChatbotUser)// && turnContext.Activity.Conversation.Id == _processStatus.ConversationId)
 			{
 				var include = "Total Transactions Processed: " + _processStatus.TotalTransactions + Environment.NewLine +
-								"Run Time: " + _processStatus.Runtime + Environment.NewLine;
+					"Start Time: " + _processStatus.Start + Environment.NewLine +
+			        "End Time: " + _processStatus.End + Environment.NewLine;
+				//"Run Time: " + _processStatus.Runtime + Environment.NewLine;
 				if (_processStatus.ProcessType == "procedural")
 				{
 					include = string.Empty;
@@ -105,7 +107,7 @@ namespace BamChatBot.Controllers
 						reason = "Reason: " + _processStatus.Info;
 					}
 					message = "Process " + _processStatus.Process + " has finished with the following updates." + Environment.NewLine +
-			"Status: " + _processStatus.State.label + Environment.NewLine +reason+
+			"Status: " + _processStatus.State.label + Environment.NewLine + reason +
 			"Start Time: " + _processStatus.Start + Environment.NewLine +
 			"End Time: " + _processStatus.End + Environment.NewLine +
 			"Successful Executions: " + _processStatus.SuccessfulExecutions + Environment.NewLine +
