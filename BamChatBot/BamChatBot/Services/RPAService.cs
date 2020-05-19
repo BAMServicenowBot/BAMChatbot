@@ -221,6 +221,51 @@ namespace BamChatBot.Services
 
 		}
 
+		internal List<Asset> HasAnyAsset(ProcessModel process)
+		{
+			var assetsWithValueFromChild = new List<Asset>();
+			//if any asset has value from child
+			foreach (var r in process.Releases)
+			{
+				foreach (var a in r.assets)
+				{
+					if (a.ValueFromChild)
+					{
+						assetsWithValueFromChild.Add(new Asset
+						{
+							sys_id = a.sys_id,
+							PerRobot = a.PerRobot,
+							UserId = process.UserId
+						});
+					}
+				}
+			}
+			return assetsWithValueFromChild;
+		}
+
+		internal APIResponse MakeAssetFromChild(List<Asset> assetsWithValueFromChild)
+		{
+			var apiResponse = new APIResponse();
+			var apiPath = GetApiPath();
+			var url = apiPath + "getAssetFromChild";
+			HttpClient client = new HttpClient();
+			client.BaseAddress = new Uri(url);
+			//add basic authorization
+			AddAuthorization(client);
+			var content = new StringContent(JsonConvert.SerializeObject(assetsWithValueFromChild), Encoding.UTF8, "application/json");
+			var response = client.PostAsync(url, content).Result;
+			var obj = response.Content.ReadAsStringAsync();
+			var result = string.Empty;
+			if (!string.IsNullOrEmpty(obj.Result))
+			{
+				//get rid of {"result":} wrapper from response
+				result = ClearResponse(obj.Result);
+				apiResponse = JsonConvert.DeserializeObject<APIResponse>(result);
+			}
+
+			return apiResponse;
+		}
+
 		internal void SaveConversationFlowInput(ConversationFlowInput conversationFlowInput)
 		{
 			var instance = GetInstanceName();
@@ -236,27 +281,38 @@ namespace BamChatBot.Services
 			var obj = response.Content.ReadAsStringAsync();
 		}
 
-		internal void UpdateUser(User user)
+		internal APIResponse UpdateUser(User user, string conversationId)
 		{
-			var instance = GetInstanceName();
-			var url = "https://" + instance + ".service-now.com/api/now/table/u_chatbot_user_state/" + user.sys_id;
+			var newUser = new User
+			{
+				u_user = user.u_user,
+				u_last_index = user.u_last_index,
+				u_conversation_id = conversationId
+			};
+
+			var apiPath = GetApiPath();
+			var url = apiPath + "updateUser";
 			HttpClient client = new HttpClient();
 			client.BaseAddress = new Uri(url);
-
+			//add basic authorization
 			AddAuthorization(client);
-
-			// Add an Accept header for JSON format.
-			client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-			var content = new StringContent(JsonConvert.SerializeObject(new User { u_last_index = user.u_last_index }), Encoding.UTF8, "application/json");
-			HttpResponseMessage response = client.PutAsync(url, content).Result;
+			var content = new StringContent(JsonConvert.SerializeObject(newUser), Encoding.UTF8, "application/json");
+			var response = client.PostAsync(url, content).Result;
 			var obj = response.Content.ReadAsStringAsync();
-			//get rid of {"result":} wrapper from response
-			var result = ClearResponse(obj.Result);
-			/*apiResponse = new APIResponse
+			var result = string.Empty;
+			if (!string.IsNullOrEmpty(obj.Result))
+			{
+				//get rid of {"result":} wrapper from response
+				result = ClearResponse(obj.Result);
+			}
+
+			var apiResponse = new APIResponse
 			{
 				Content = result,
 				IsSuccess = response.IsSuccessStatusCode
-			};*/
+			};
+
+			return apiResponse;
 
 		}
 
@@ -326,31 +382,34 @@ namespace BamChatBot.Services
 
 		internal void SaveUser(User user)
 		{
-			var instance = GetInstanceName();
-			var url = "https://" + instance + ".service-now.com/api/now/table/u_chatbot_user_state";
+			var apiPath = GetApiPath();
+			var url = apiPath + "saveUser";
 			HttpClient client = new HttpClient();
 			client.BaseAddress = new Uri(url);
-			// var urlParameters = "?user=" + data.UserId + "&sys_id=" + data.Sys_id;
 			//add basic authorization
 			AddAuthorization(client);
-			var json = JsonConvert.SerializeObject(user);
-			var content = new StringContent(json, Encoding.UTF8, "application/json");
-			var response = client.PostAsync(url, content).Result;
-			var obj = response.Content.ReadAsStringAsync();
-
-			//get rid of {"result":} wrapper from response
-			/*var result = ClearResponse(obj.Result);
-			var apiResponse = new APIResponse
+			try
 			{
-				Content = result,
-				IsSuccess = response.IsSuccessStatusCode
-			};*/
+				var content = new StringContent(JsonConvert.SerializeObject(user), Encoding.UTF8, "application/json");
+				var response = client.PostAsync(url, content).Result;
+			}
+			catch (Exception ex)
+			{
+			}
 
+		}
+
+		internal Choice GetMainMenuOption()
+		{
+			return new Choice
+			{
+				Value = "Main Menu",
+				Action = new CardAction(ActionTypes.PostBack, "Main Menu", null, "Main Menu", "Main Menu", "Main Menu", null)
+			};
 		}
 
 		internal APIResponse GetUser(string conversationId)
 		{
-
 			var apiPath = GetApiPath();
 			var url = apiPath + "getUser";
 			HttpClient client = new HttpClient();
@@ -595,31 +654,19 @@ namespace BamChatBot.Services
 		internal TopProcess GetListOfProcess(List<ProcessModel> processes, int lastIdx)
 		{
 			var tempProcesses = new List<ProcessModel>();
-			//test
-			/*var _p = processes[processes.Count-1];
-			
-			for (var i=0; i < 10; i++)
-			{
-				var pm = new ProcessModel
-				{
-					Name = _p.Name + i.ToString(),
-					Sys_id = _p.Sys_id
-				};
-				
-				processes.Add(pm);
-			}*/
-			//end test
+			var maxProcessDisplayed = 10;
+
 			//initialize list of Choices
 			var choices = new List<Choice>();
 
 
 
-			if (processes.Count > 10)
+			if (processes.Count > maxProcessDisplayed)
 			{
 				var count = 0;
 				for (var p = lastIdx; p < processes.Count; p++)
 				{
-					if (count == 10)
+					if (count == maxProcessDisplayed)
 					{
 						lastIdx = p;
 						break;

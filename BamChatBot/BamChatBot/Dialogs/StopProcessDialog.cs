@@ -15,10 +15,8 @@ namespace BamChatBot.Dialogs
 {
 	public class StopProcessDialog : CancelAndHelpDialog
 	{
-		protected readonly IStatePropertyAccessor<User> _userAccessor;
-		public StopProcessDialog(IStatePropertyAccessor<User> userAccessor) : base(nameof(StopProcessDialog))
+		public StopProcessDialog() : base(nameof(StopProcessDialog))
 		{
-			_userAccessor = userAccessor;
 			AddDialog(new TextPrompt(nameof(TextPrompt)));
 			AddDialog(new ChoicePrompt(nameof(ChoicePrompt)));
 			AddDialog(new ConfirmPrompt(nameof(ConfirmPrompt)));
@@ -61,14 +59,14 @@ namespace BamChatBot.Dialogs
 				var user = new List<User>();
 				if (response.IsSuccess)
 					user = JsonConvert.DeserializeObject<List<User>>(response.Content);
-				var result = rpaService.GetListOfProcess(processes, user[0].u_last_index);
+				var result = rpaService.GetListOfProcess(processes, Convert.ToInt32(user[0].u_last_index));
 				var choices = result.Choices;
 				//add one choice for rpa support
 				var rpaSupportChoice = rpaService.GetRPASupportOption();
 				choices.Add(rpaSupportChoice);
 				//save index
-				user[0].u_last_index = result.LastIndex;
-				rpaService.UpdateUser(user[0]);
+				user[0].u_last_index = result.LastIndex.ToString();
+				rpaService.UpdateUser(user[0], stepContext.Context.Activity.Conversation.Id);
 				//_user.u_last_index = result.LastIndex;
 				//await this._userAccessor.SetAsync(stepContext.Context, _user, cancellationToken);
 
@@ -107,8 +105,8 @@ namespace BamChatBot.Dialogs
 
 				case "rpasupport@bayview.com":
 					//save index
-					user[0].u_last_index = 0;
-					rpaService.UpdateUser(user[0]);
+					user[0].u_last_index = "0";
+					rpaService.UpdateUser(user[0], stepContext.Context.Activity.Conversation.Id);
 					//_user.u_last_index = 0;
 					//await _userAccessor.SetAsync(stepContext.Context, _user, cancellationToken);
 					processDetails.Action = string.Empty;
@@ -119,8 +117,8 @@ namespace BamChatBot.Dialogs
 					if (!string.IsNullOrEmpty(processDetails.ProcessSelected.Sys_id))
 					{
 						//save index
-						user[0].u_last_index = 0;
-						rpaService.UpdateUser(user[0]);
+						user[0].u_last_index = "0";
+						rpaService.UpdateUser(user[0], stepContext.Context.Activity.Conversation.Id);
 						//_user.u_last_index = 0;
 						//await _userAccessor.SetAsync(stepContext.Context, _user, cancellationToken);
 						return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions

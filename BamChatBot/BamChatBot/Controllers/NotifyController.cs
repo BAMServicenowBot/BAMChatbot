@@ -90,9 +90,12 @@ namespace BamChatBot.Controllers
 				user = JsonConvert.DeserializeObject<List<User>>(response.Content);
 			if (user[0].u_user == _processStatus.ChatbotUser)// && turnContext.Activity.Conversation.Id == _processStatus.ConversationId)
 			{
+				var endTime = _processStatus.End != null ? "End Time: " + _processStatus.End + Environment.NewLine : string.Empty;
+				var startTime = _processStatus.Start != null ? "Start Time: " + _processStatus.Start + Environment.NewLine : string.Empty;
+
 				var include = "Total Transactions Processed: " + _processStatus.TotalTransactions + Environment.NewLine +
-					"Start Time: " + _processStatus.Start + Environment.NewLine +
-			        "End Time: " + _processStatus.End + Environment.NewLine;
+					startTime +
+					endTime;
 				//"Run Time: " + _processStatus.Runtime + Environment.NewLine;
 				if (_processStatus.ProcessType == "procedural")
 				{
@@ -106,10 +109,10 @@ namespace BamChatBot.Controllers
 					{
 						reason = "Reason: " + _processStatus.Info;
 					}
-					message = "Process " + _processStatus.Process + " has finished with the following updates." + Environment.NewLine +
+					message = "Process " + _processStatus.Process + " has finished with the following updates:" + Environment.NewLine +
 			"Status: " + _processStatus.State.label + Environment.NewLine + reason +
-			"Start Time: " + _processStatus.Start + Environment.NewLine +
-			"End Time: " + _processStatus.End + Environment.NewLine +
+			startTime +
+			endTime +
 			"Successful Executions: " + _processStatus.SuccessfulExecutions + Environment.NewLine +
 			"Exceptions: " + _processStatus.Exceptions;
 				}

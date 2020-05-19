@@ -24,7 +24,7 @@ namespace BamChatBot.Dialogs
 	{
 		private readonly ProcessRecognizer _luisRecognizer;
 		protected readonly ILogger Logger;
-		protected readonly IStatePropertyAccessor<User> _userAccessor;
+		//protected readonly IStatePropertyAccessor<User> _userAccessor;
 		public readonly IStatePropertyAccessor<ConversationFlow> _conversationFlow;
 		private ProcessDetails processDetails;
 
@@ -34,16 +34,16 @@ namespace BamChatBot.Dialogs
 		{
 			_luisRecognizer = luisRecognizer;
 			Logger = logger;
-			_userAccessor = userState.CreateProperty<User>(nameof(User));
+			
 			_conversationFlow = conversationState.CreateProperty<ConversationFlow>(nameof(ConversationFlow));
 			processDetails = new ProcessDetails();
 
 			AddDialog(new TextPrompt(nameof(TextPrompt)));
 			AddDialog(new ChoicePrompt(nameof(ChoicePrompt)));
-			AddDialog(new StartProcessDialog(_userAccessor, _conversationFlow));
-			AddDialog(new StatusDialog(_userAccessor));
+			AddDialog(new StartProcessDialog(_conversationFlow));
+			AddDialog(new StatusDialog());
 			AddDialog(new EndConversationDialog());
-			AddDialog(new StopProcessDialog(_userAccessor));
+			AddDialog(new StopProcessDialog());
 			AddDialog(new WaterfallDialog(nameof(WaterfallDialog), new WaterfallStep[]
 			{
 				IntroStepAsync,
@@ -286,16 +286,12 @@ namespace BamChatBot.Dialogs
 							{
 								Value = "bam?id=rpa_new_request&type=incident",
 								Action = new CardAction(ActionTypes.PostBack, "Click Here", null, "Click Here", "openUrl", "bam?id=rpa_new_request&type=incident", null)
-							 } };
+							 }
+						};
+						choices.Add(rpaService.GetMainMenuOption());
 						return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions
 						{
-							Prompt = (Activity)ChoiceFactory.SuggestedAction(choices, "To Report an Issue. ")
-							/*Prompt = MessageFactory.Text("To Report an Issue. "),
-							Choices = new List<Choice> { new Choice
-							{
-								Value = "bam?id=rpa_new_request&type=incident",
-								Action = new CardAction(ActionTypes.PostBack, "Click Here", null, "Click Here", "openUrl", "bam?id=rpa_new_request&type=incident", null)
-							 } }*/
+							Prompt = (Activity)ChoiceFactory.SuggestedAction(choices, "To Report an Issue, click Button below")
 						}, cancellationToken);
 					case "**contact rpa support**":
 					case "contact rpa support":
@@ -308,8 +304,6 @@ namespace BamChatBot.Dialogs
 						return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions
 						{
 							Prompt = (Activity)ChoiceFactory.SuggestedAction(ChoiceFactory.ToChoices(new List<string> { "Yes", "No" }), "You would like to contact RPA Support, is that correct?")
-							/*Prompt = MessageFactory.Text("You would like to contact RPA Support, is that correct?"),
-							Choices = ChoiceFactory.ToChoices(new List<string> { "Yes", "No" })*/
 						}, cancellationToken);
 					case "request an enhancement":
 					case "enhancement":
@@ -321,15 +315,10 @@ namespace BamChatBot.Dialogs
 								Value = "bam?id=rpa_new_request&type=enhancement",
 								Action = new CardAction(ActionTypes.PostBack, "Click Here", null, "Click Here", "openUrl", "bam?id=rpa_new_request&type=enhancement", null)
 							 } };
+						options.Add(rpaService.GetMainMenuOption());
 						return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions
 						{
-							Prompt = (Activity)ChoiceFactory.SuggestedAction(options, "To Request an Enhancement")
-							/*Prompt = MessageFactory.Text("To Request an Enhancement. "),
-							Choices = new List<Choice> { new Choice
-							{
-								Value = "bam?id=rpa_new_request&type=enhancement",
-								Action = new CardAction(ActionTypes.PostBack, "Click Here", null, "Click Here", "openUrl", "bam?id=rpa_new_request&type=enhancement", null)
-							 } }*/
+							Prompt = (Activity)ChoiceFactory.SuggestedAction(options, "To Request an Enhancement, click Button below")
 						}, cancellationToken);
 					case "submit a new idea":
 					case "new idea":
@@ -344,7 +333,7 @@ namespace BamChatBot.Dialogs
 							{
 								Value = "bam?id=sc_cat_item&sys_id=a41ac289db7c6f0004b27709af9619a3",
 								Action = new CardAction(ActionTypes.PostBack, "Click Here", null, "Click Here", "openUrl", "bam?id=sc_cat_item&sys_id=a41ac289db7c6f0004b27709af9619a3", null)
-							 } }, "To Submit an Idea")
+							 } ,rpaService.GetMainMenuOption()}, "To Submit an Idea, click Button below")
 							
 						}, cancellationToken);
 						
@@ -374,6 +363,7 @@ namespace BamChatBot.Dialogs
 
 		private async Task<DialogTurnResult> ContinueStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
 		{
+			var rpaService = new RPAService();
 			var processDetails = this.processDetails;
 			processDetails.Action = string.Empty;
 			var option = stepContext.Result.ToString();
@@ -385,18 +375,17 @@ namespace BamChatBot.Dialogs
 								Value = "rpaSupport",
 								Action = new CardAction(ActionTypes.PostBack, "Click Here", null, "Click Here", "openEmail", "RPASupport@bayview.com", null)
 							 } };
+				choices.Add(rpaService.GetMainMenuOption());
 				
 				return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions
 				{
-					Prompt = (Activity)ChoiceFactory.SuggestedAction(choices, "To Contact RPA Support.")
-					/*Prompt = MessageFactory.Text("To Contact RPA Support. "),
-					Choices = new List<Choice> { new Choice
-							{
-								Value = "rpaSupport",
-								Action = new CardAction(ActionTypes.PostBack, "Click Here", null, "Click Here", "openEmail", "RPASupport@bayview.com", null)
-							 } }*/
-
+					Prompt = (Activity)ChoiceFactory.SuggestedAction(choices, "To Contact RPA Support, click Button below")
+					
 				}, cancellationToken);
+			}
+			else if(option.ToLower() == "main menu")
+			{
+				return await stepContext.ReplaceDialogAsync(InitialDialogId, null, cancellationToken);
 			}
 			else
 			{
@@ -409,6 +398,11 @@ namespace BamChatBot.Dialogs
 		{
 			var processDetails = this.processDetails;
 			processDetails.Action = string.Empty;
+			var option = stepContext.Result.ToString();
+			if (option.ToLower() == "main menu")
+			{
+				return await stepContext.ReplaceDialogAsync(InitialDialogId, null, cancellationToken);
+			}
 			return await stepContext.ReplaceDialogAsync(InitialDialogId, processDetails, cancellationToken);
 		}
 	}

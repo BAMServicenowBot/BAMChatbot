@@ -15,10 +15,8 @@ namespace BamChatBot.Dialogs
 {
 	public class StatusDialog : CancelAndHelpDialog
 	{
-		protected readonly IStatePropertyAccessor<User> _userAccessor;
-		public StatusDialog(IStatePropertyAccessor<User> userAccessor) : base(nameof(StatusDialog))
+		public StatusDialog() : base(nameof(StatusDialog))
 		{
-			_userAccessor = userAccessor;
 			AddDialog(new TextPrompt(nameof(TextPrompt)));
 			AddDialog(new ChoicePrompt(nameof(ChoicePrompt)));
 			AddDialog(new ConfirmPrompt(nameof(ConfirmPrompt)));
@@ -61,7 +59,7 @@ namespace BamChatBot.Dialogs
 				var user = new List<User>();
 				if (response.IsSuccess)
 					user = JsonConvert.DeserializeObject<List<User>>(response.Content);
-				var result = rpaService.GetListOfProcess(processes, user[0].u_last_index);
+				var result = rpaService.GetListOfProcess(processes, Convert.ToInt32(user[0].u_last_index));
 				var choices = result.Choices;
 				//var rpaSupportChoice = rpaService.GetRPASupportOption();
 				var mainMenu = new Choice
@@ -73,8 +71,8 @@ namespace BamChatBot.Dialogs
 				//choices.Add(rpaSupportChoice);
 				choices.Add(mainMenu);
 				//save index
-				user[0].u_last_index = result.LastIndex;
-				rpaService.UpdateUser(user[0]);
+				user[0].u_last_index = result.LastIndex.ToString();
+				rpaService.UpdateUser(user[0], stepContext.Context.Activity.Conversation.Id);
 				//_user.u_last_index = result.LastIndex;
 				//await this._userAccessor.SetAsync(stepContext.Context, _user, cancellationToken);
 
@@ -108,8 +106,8 @@ namespace BamChatBot.Dialogs
 			if (result.ToLower() == "menu"/*"RPASupport@bayview.com"*/)
 			{
 				//save index
-				user[0].u_last_index = 0;
-				rpaService.UpdateUser(user[0]);
+				user[0].u_last_index = "0";
+				rpaService.UpdateUser(user[0], stepContext.Context.Activity.Conversation.Id);
 				//_user.u_last_index = 0;
 				//await _userAccessor.SetAsync(stepContext.Context, _user, cancellationToken);
 				processDetails.Action = string.Empty;
@@ -127,8 +125,8 @@ namespace BamChatBot.Dialogs
 				if (!string.IsNullOrEmpty(processDetails.ProcessSelected.Sys_id))
 				{
 					//save index
-					user[0].u_last_index = 0;
-					rpaService.UpdateUser(user[0]);
+					user[0].u_last_index = "0";
+					rpaService.UpdateUser(user[0], stepContext.Context.Activity.Conversation.Id);
 					//_user.u_last_index = 0;
 					//await _userAccessor.SetAsync(stepContext.Context, _user, cancellationToken);
 					var apiRequest = new APIRequest
@@ -177,11 +175,13 @@ namespace BamChatBot.Dialogs
 							{
 								include = string.Empty;
 							}
+							var endTime = item.End!=null ? "End Time: " + item.End + Environment.NewLine : string.Empty;
+							var startTime = item.Start != null ? "Start Time: " + item.Start + Environment.NewLine : string.Empty;
 
 							text += 
 								"Status: " + item.State.label + Environment.NewLine +
-								"Start Time: " + item.Start + Environment.NewLine +
-								"End Time: " + item.End + Environment.NewLine +
+								startTime+
+								endTime +
 								include +
 								"Total Transactions Successful: " +Convert.ToInt32(item.TotalTransSuccessful) + Environment.NewLine +
 								"Total Exceptions: " + Convert.ToInt32(item.TotalExceptions);

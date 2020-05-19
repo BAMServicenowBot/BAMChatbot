@@ -11,5 +11,7 @@ namespace BamChatBot.Models
         public bool IsSuccess { get; set; }
 		public string Error { get; set; }
 		public string Message { get; set; }
+		public string Body { get; set; }
+		public string Code { get; set; }
 	}
 }

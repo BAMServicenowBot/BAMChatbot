@@ -15,7 +15,10 @@
         public string Id { get; set; }
         public string sys_id { get; set; }
         public OU ou { get; set; }
-					
-    }
+		public bool ValueFromChild { get; set; }
+		public bool PerRobot { get; set; }
+		public string UserId { get; set; }
+
+	}
 
 }
