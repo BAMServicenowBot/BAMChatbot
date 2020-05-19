@@ -165,19 +165,44 @@ namespace BamChatBot.Dialogs
 						var response = rpaService.MakeAssetFromChild(assetsWithValueFromChild);
 						if (response.Body != "Success")
 						{
-							var choices = new List<Choice>
-					            { new Choice
+							var choices = new List<Choice>();
+							var rpaOption = rpaService.GetMainMenuOption();
+							if (response.MissingAsset)
 							{
-
-								Value = "bam?id=rpa_processes",
-								Action = new CardAction(ActionTypes.PostBack, "Click Here", null, "Click Here", "openUrl", "bam?id=rpa_processes", null)
-							 } };
-							choices.Add(rpaService.GetMainMenuOption());
-							//send the user to SN UI page
-							return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions
+								//create incident
+								var incident = rpaService.CreateRPAIncident(processDetails.ProcessSelected);
+								choices = new List<Choice>
+								{
+new Choice
+								 {
+									 Value = "bam?id=rpa_request&table=u_robot_incident&sys_id="+ incident.Sys_Id,
+									 Action = new CardAction(ActionTypes.PostBack, incident.Number, null, incident.Number, "openUrl", "bam?id=rpa_request&table=u_robot_incident&sys_id=" + incident.Sys_Id, null)
+								 }
+								};
+								choices.Add(rpaOption);
+								
+								return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions
+								{
+									Prompt = (Activity)ChoiceFactory.SuggestedAction(choices, "Process " + processDetails.ProcessSelected.Name + " requires an asset associated to your user, an incident has been opened to RPA Support." + Environment.NewLine + "Click incident number below to open it")
+								}, cancellationToken);
+							}
+							else
 							{
-								Prompt = (Activity)ChoiceFactory.SuggestedAction(choices, "Process " + processDetails.ProcessSelected.Name + " need to be triggered from Servicenow." + Environment.NewLine + "To go to Servicenow click Button below")
-							}, cancellationToken);
+								choices = new List<Choice>
+								{
+								 new Choice
+								 {
+									 Value = "bam?id=rpa_process_assets&process="+ processDetails.ProcessSelected.Sys_id,
+									 Action = new CardAction(ActionTypes.PostBack, "Update Asset", null, "Update Asset", "openUrl", "bam?id=rpa_process_assets&process=" + processDetails.ProcessSelected.Sys_id, null)
+								 } };
+								choices.Add(rpaOption);
+								//send the user to SN UI page
+								return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions
+								{
+									Prompt = (Activity)ChoiceFactory.SuggestedAction(choices, response.Body + Environment.NewLine + "Please enter them before running the process by pressing Update Asset button below")
+								}, cancellationToken);
+							}
+							
 						}
 					}
 					if (processDetails.ProcessSelected.Releases.Any(r => r.robots.Count > 1))

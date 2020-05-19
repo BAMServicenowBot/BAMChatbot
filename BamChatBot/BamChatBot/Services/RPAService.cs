@@ -243,6 +243,31 @@ namespace BamChatBot.Services
 			return assetsWithValueFromChild;
 		}
 
+		internal Incident CreateRPAIncident(ProcessModel processSelected)
+		{
+			var incident = new Incident();
+			var apiPath = GetApiPath();
+			var url = apiPath + "createRPAIncident";
+			HttpClient client = new HttpClient();
+			client.BaseAddress = new Uri(url);
+			//add basic authorization
+			AddAuthorization(client);
+			var content = new StringContent(JsonConvert.SerializeObject(processSelected), Encoding.UTF8, "application/json");
+			var response = client.PostAsync(url, content).Result;
+			var obj = response.Content.ReadAsStringAsync();
+			var result = string.Empty;
+			if (!string.IsNullOrEmpty(obj.Result))
+			{
+			 //get rid of {"result":} wrapper from response
+				result = ClearResponse(obj.Result);
+				
+			}
+			if (response.IsSuccessStatusCode)
+				incident = JsonConvert.DeserializeObject<Incident>(result);
+
+			return incident;
+		}
+
 		internal APIResponse MakeAssetFromChild(List<Asset> assetsWithValueFromChild)
 		{
 			var apiResponse = new APIResponse();
