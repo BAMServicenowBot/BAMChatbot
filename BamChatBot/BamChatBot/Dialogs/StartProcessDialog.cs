@@ -150,7 +150,7 @@ namespace BamChatBot.Dialogs
 		{
 			var processDetails = (ProcessDetails)stepContext.Options;
 			var result = stepContext.Result.ToString();
-			if (result.ToLower() == "yes")
+			if (result.ToLower() == "yes" || result.ToLower() == "y")
 			{
 				var rpaService = new RPAService();
 				//save activity id for when process finish
@@ -230,7 +230,7 @@ new Choice
 					return await stepContext.ReplaceDialogAsync(nameof(MainDialog), processDetails, cancellationToken);
 				}
 			}
-			else if (result.ToLower() == "no")//when no is selected
+			else if (result.ToLower() == "no" || result.ToLower() == "n")//when no is selected
 			{
 				processDetails.Action = string.Empty;
 				return await stepContext.ReplaceDialogAsync(nameof(MainDialog), null, cancellationToken);
@@ -249,7 +249,7 @@ new Choice
 			var processDetails = (ProcessDetails)stepContext.Options;
 			processDetails.Action = string.Empty;
 			var option = stepContext.Result.ToString();
-			if (option.ToLower() == "main menu")
+			if (option.ToLower() == "main menu" || option.ToLower() == "m")
 			{
 				return await stepContext.ReplaceDialogAsync(nameof(MainDialog), null, cancellationToken);
 			}

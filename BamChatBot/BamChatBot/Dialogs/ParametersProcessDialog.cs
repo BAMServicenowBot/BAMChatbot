@@ -208,7 +208,7 @@ namespace BamChatBot.Dialogs
 			var rpaService = new RPAService();
 			var processDetails = (ProcessDetails)stepContext.Options;
 			var result = stepContext.Result.ToString();
-			if (result.ToLower() == "yes")
+			if (result.ToLower() == "yes" || result.ToLower() == "y")
 			{
 				//clear data in SN table
 				rpaService.DeleteConversationFlowInputs(stepContext.Context.Activity.Conversation.Id);

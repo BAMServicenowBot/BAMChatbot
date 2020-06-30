@@ -104,12 +104,12 @@ namespace BamChatBot.Dialogs
 			var processDetails = (ProcessDetails)stepContext.Options;
 
 			var action = stepContext.Result.ToString();
-			if (action.ToLower() == "yes")
+			if (action.ToLower() == "yes" || action.ToLower() == "y")
 			{
 				//start StartProcessDialog Dialog
 				return await stepContext.ReplaceDialogAsync(nameof(StartProcessDialog), processDetails, cancellationToken);
 			}
-			else if (action.ToLower() == "no")//go back to main Dialog
+			else if (action.ToLower() == "no" || action.ToLower() == "n")//go back to main Dialog
 			{
 				processDetails.Action = string.Empty;
 				return await stepContext.ReplaceDialogAsync(nameof(MainDialog), processDetails, cancellationToken);

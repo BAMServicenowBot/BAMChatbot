@@ -69,9 +69,11 @@ namespace BamChatBot.Dialogs
 			switch (action.ToLower())
 			{
 				case "yes":
+				case "y":
 					return await stepContext.ReplaceDialogAsync(nameof(StartProcessDialog), processDetails, cancellationToken);
 				case "rpasupport@bayview.com":
 				case "no":
+				case "n":
 					processDetails.Action = string.Empty;
 					return await stepContext.ReplaceDialogAsync(nameof(MainDialog), processDetails, cancellationToken);
 				default:

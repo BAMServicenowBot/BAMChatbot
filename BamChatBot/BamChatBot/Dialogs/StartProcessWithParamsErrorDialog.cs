@@ -51,7 +51,7 @@ Action = new CardAction(ActionTypes.PostBack, "To Contact RPA Support click here
 			var processDetails = (ProcessDetails)stepContext.Options;
 			var result = stepContext.Result.ToString();
 			processDetails.Action = string.Empty;
-			if(result.ToLower() == "menu")
+			if(result.ToLower() == "menu" || result.ToLower() == "m")
 			{
 				return await stepContext.ReplaceDialogAsync(nameof(MainDialog), null, cancellationToken);
 			}

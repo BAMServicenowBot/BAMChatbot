@@ -103,7 +103,7 @@ namespace BamChatBot.Dialogs
 			var user = new List<User>();
 			if (_response.IsSuccess)
 				user = JsonConvert.DeserializeObject<List<User>>(_response.Content);
-			if (result.ToLower() == "menu"/*"RPASupport@bayview.com"*/)
+			if (result.ToLower() == "menu" || result.ToLower() == "m"/*"RPASupport@bayview.com"*/)
 			{
 				//save index
 				user[0].u_last_index = "0";
@@ -213,12 +213,12 @@ namespace BamChatBot.Dialogs
 
 			var processDetails = (ProcessDetails)stepContext.Options;
 			var result = stepContext.Result.ToString();
-			if (result.ToLower() == "yes")
+			if (result.ToLower() == "yes" || result.ToLower() == "y")
 			{
 				//restart this Dialog
 				return await stepContext.ReplaceDialogAsync(nameof(StatusDialog), processDetails, cancellationToken);
 			}
-			else if (result.ToLower() == "no")//go back to main Dialog
+			else if (result.ToLower() == "no" || result.ToLower() == "n")//go back to main Dialog
 			{
 				processDetails.Action = string.Empty;
 				return await stepContext.ReplaceDialogAsync(nameof(MainDialog), processDetails, cancellationToken);

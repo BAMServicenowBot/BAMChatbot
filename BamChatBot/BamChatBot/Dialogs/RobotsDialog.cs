@@ -181,7 +181,7 @@ namespace BamChatBot.Dialogs
 						if (b.id == processDetails.ProcessSelected.Bot.id)
 						{
 							b.Shown = true;
-							if (result.ToLower() == "yes")
+							if (result.ToLower() == "yes" || result.ToLower() == "y")
 							{
 								b.Selected = true;
 								processDetails.ProcessSelected.Bot.Selected = true;

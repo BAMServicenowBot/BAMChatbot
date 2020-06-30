@@ -78,9 +78,7 @@ namespace BamChatBot.Dialogs
 					case "default":
 						message = "I am sorry, I do not understand your request. Please try asking a different way or type "+'"'+"Menu" + '"' +" for available options.";
 						return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions { Prompt = MessageFactory.Text(message), }, cancellationToken);
-					case "startOver":
-						message = "What can I help you with today?";
-						return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions { Prompt = MessageFactory.Text(message), }, cancellationToken);
+					
 					case "error":
 						message = processDetails.Error + Environment.NewLine + txt;
 						return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions
@@ -117,7 +115,7 @@ namespace BamChatBot.Dialogs
 				//if (stepContext.Result.GetType() == typeof(FoundChoice))
 				//{
 				//var action = (FoundChoice)stepContext.Result;
-				if (action.ToLower() == "yes")
+				if (action.ToLower() == "yes" || action.ToLower() == "y")
 				{
 					//set rpa for LUIS to recognize it as RAP intent, and show the list of actions again
 					stepContext.Context.Activity.Text = "rpa";
@@ -272,9 +270,7 @@ namespace BamChatBot.Dialogs
 					case "stop bot":
 						processDetails.Action = "stop";
 						return await stepContext.BeginDialogAsync(nameof(StopProcessDialog), processDetails, cancellationToken);
-					case "start over":
-						processDetails.Action = "startOver";
-						return await stepContext.ReplaceDialogAsync(nameof(MainDialog), processDetails, cancellationToken);
+					
 					case "report an issue":
 					case "issue":
 					case "report":
@@ -336,7 +332,20 @@ namespace BamChatBot.Dialogs
 							 } ,rpaService.GetMainMenuOption()}, "To Submit an Idea, click Button below")
 							
 						}, cancellationToken);
-						
+					case "Bot Portal":
+					case "bot portal":
+						processDetails.Action = string.Empty;
+						 options = new List<Choice> { new Choice
+							{
+								Value = "bam?id=rpa_processes",
+								Action = new CardAction(ActionTypes.PostBack, "Click Here", null, "Click Here", "openUrl", "bam?id=rpa_processes", null)
+							 } };
+						options.Add(rpaService.GetMainMenuOption());
+						return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions
+						{
+							Prompt = (Activity)ChoiceFactory.SuggestedAction(options, "To go to Bot Portal, click Button below")
+						}, cancellationToken);
+
 					case "end chat":
 					case "exit":
 					case "exit chat":
@@ -367,7 +376,7 @@ namespace BamChatBot.Dialogs
 			var processDetails = this.processDetails;
 			processDetails.Action = string.Empty;
 			var option = stepContext.Result.ToString();
-			if (option.ToLower() == "yes")
+			if (option.ToLower() == "yes" || option.ToLower() == "y")
 			{
 				var choices = new List<Choice>
 				{ new Choice
@@ -383,7 +392,7 @@ namespace BamChatBot.Dialogs
 					
 				}, cancellationToken);
 			}
-			else if(option.ToLower() == "main menu")
+			else if(option.ToLower() == "main menu" || option.ToLower() == "m")
 			{
 				return await stepContext.ReplaceDialogAsync(InitialDialogId, null, cancellationToken);
 			}
@@ -399,7 +408,7 @@ namespace BamChatBot.Dialogs
 			var processDetails = this.processDetails;
 			processDetails.Action = string.Empty;
 			var option = stepContext.Result.ToString();
-			if (option.ToLower() == "main menu")
+			if (option.ToLower() == "main menu" || option.ToLower() == "m")
 			{
 				return await stepContext.ReplaceDialogAsync(InitialDialogId, null, cancellationToken);
 			}

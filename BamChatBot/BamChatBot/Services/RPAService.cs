@@ -41,6 +41,8 @@ namespace BamChatBot.Services
 
 		internal void AddAuthorization(HttpClient client)
 		{
+			//get authorized user
+			//userName
 			//get credentials
 
 			var credentials = Convert.ToBase64String(Encoding.ASCII.GetBytes(string.Format("{0}:{1}", this.UserName, this.Pass)));
@@ -50,6 +52,7 @@ namespace BamChatBot.Services
 
 		internal APIResponse GetApiResult(string endPoint, string userId)
 		{
+			var apiResponse = new APIResponse();
 			var user = new User();
 			//get user first name  
 			var apiPath = GetApiPath();
@@ -68,17 +71,24 @@ namespace BamChatBot.Services
 			client.DefaultRequestHeaders.Accept.Add(
 			new MediaTypeWithQualityHeaderValue("application/json"));
 
-			// List data response.
-			HttpResponseMessage response = client.GetAsync(urlParameters).Result;
-
-			var obj = response.Content.ReadAsStringAsync();
-			//get rid of {"result":} wrapper from response
-			var result = ClearResponse(obj.Result);
-			var apiResponse = new APIResponse
+			try
 			{
-				Content = result,
-				IsSuccess = response.IsSuccessStatusCode
-			};
+				// List data response.
+				HttpResponseMessage response = client.GetAsync(urlParameters).Result;
+
+				var obj = response.Content.ReadAsStringAsync();
+				//get rid of {"result":} wrapper from response
+				var result = ClearResponse(obj.Result);
+				apiResponse = new APIResponse
+				{
+					Content = result,
+					IsSuccess = response.IsSuccessStatusCode
+				};
+			}
+			catch (Exception ex)
+			{
+				
+			}
 
 			return apiResponse;
 		}
@@ -366,14 +376,14 @@ namespace BamChatBot.Services
 
 		}
 
-		internal APIResponse StopProcess(string processId)
+		internal APIResponse StopProcess(string processId, int strategy)
 		{
 			var apiResponse = new APIResponse();
 			var apiPath = GetApiPath();
 			var url = apiPath + "stopProcess";
 			HttpClient client = new HttpClient();
 			client.BaseAddress = new Uri(url);
-			var urlParameters = "?sys_id=" + processId;
+			var urlParameters = "?sys_id=" + processId+ "&strategy="+ strategy;
 			//add basic authorization
 			AddAuthorization(client);
 			// Add an Accept header for JSON format.

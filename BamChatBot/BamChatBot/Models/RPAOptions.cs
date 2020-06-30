@@ -21,11 +21,8 @@ namespace BamChatBot.Models
 				"Request an Enhancement",
 				"Submit a New Idea",
 				"**Contact RPA Support**",
-				"End Chat"/*,
-
-
-				"Start Over",
-				"Done"*/
+				"Bot Portal",
+				"End Chat"
 			};
 			
 

@@ -67,7 +67,7 @@ namespace BamChatBot.Dialogs
 				processDetails.Action = string.Empty;
 				return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions { Prompt = MessageFactory.Text("Welcome back!" + Environment.NewLine + "Type " + '"' + "Menu" + '"' + " for available options.") }, cancellationToken);
 			}
-			else if(result.ToLower() == "no")
+			else if(result.ToLower() == "no" || result.ToLower() == "n")
 			{
 				processDetails.Action = string.Empty;
 				return await stepContext.ReplaceDialogAsync(nameof(MainDialog), null, cancellationToken);
@@ -84,7 +84,7 @@ namespace BamChatBot.Dialogs
 		{
 			
 			// This condition is our validation rule. You can also change the value at this point.
-			return Task.FromResult(promptContext.Recognized.Succeeded && (promptContext.Recognized.Value.Value == "button" || promptContext.Recognized.Value.Value == "no"));
+			return Task.FromResult(promptContext.Recognized.Succeeded && (promptContext.Recognized.Value.Value == "button" || promptContext.Recognized.Value.Value == "no" || promptContext.Recognized.Value.Value == "n"));
 		}
 	}
 }
