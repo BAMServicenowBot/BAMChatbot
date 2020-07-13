@@ -68,10 +68,11 @@ namespace BamChatBot.Dialogs
 				var processDetails = (ProcessDetails)stepContext.Options;
 				processDetails.AttemptCount = 0;
 				var message = string.Empty;
+				var value = JsonConvert.SerializeObject(new PromptOption { Id = "mainIntro", Value = "Yes" });
 				var choices = new List<Choice> { new Choice
 							{
 								Value = "Yes",
-								Action = new CardAction(ActionTypes.PostBack, "Main Menu", null, "Main Menu", "Main Menu", "Yes", null)
+								Action = new CardAction(ActionTypes.PostBack, "Main Menu", null, "Main Menu", "Main Menu", value: value, null)
 							 } };
 				switch (processDetails.Action)
 				{
@@ -87,6 +88,15 @@ namespace BamChatBot.Dialogs
 							//Prompt = MessageFactory.Text(message),
 							//Choices = ChoiceFactory.ToChoices(new List<string> { "Yes", "No" })
 						}, cancellationToken);
+					case "pastMenu":
+						message = "Clicking or interacting with a previous menu option is not allowed!" + Environment.NewLine + txt;
+						return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions
+						{
+							Prompt = (Activity)ChoiceFactory.SuggestedAction(choices, message),
+							//Prompt = MessageFactory.Text(message),
+							//Choices = ChoiceFactory.ToChoices(new List<string> { "Yes", "No" })
+						}, cancellationToken);
+						
 					default:
 						message = txt;
 						return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions
@@ -106,12 +116,27 @@ namespace BamChatBot.Dialogs
 
 		private async Task<DialogTurnResult> ActStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
 		{
-
+			
 			var processDetails = new ProcessDetails();
 			if (stepContext.Result != null)
 			{
 				var action = stepContext.Result.ToString();
+				var promptOption = new PromptOption();
+				try
+				{
+					promptOption = JsonConvert.DeserializeObject<PromptOption>(stepContext.Result.ToString());
+				}
+				catch (Exception) { }
 
+				if (!string.IsNullOrEmpty(promptOption.Id))
+				{
+					if (promptOption.Id != "mainIntro")
+					{
+						processDetails.Action = "pastMenu";
+						return await stepContext.ReplaceDialogAsync(nameof(MainDialog), processDetails, cancellationToken);
+					}
+					action = promptOption.Value;
+				}
 				//if (stepContext.Result.GetType() == typeof(FoundChoice))
 				//{
 				//var action = (FoundChoice)stepContext.Result;
@@ -147,10 +172,12 @@ namespace BamChatBot.Dialogs
 
 						foreach (var option in rpaOptions.Options)
 						{
+							var value = JsonConvert.SerializeObject(option);
+
 							choices.Add(new Choice
 							{
-								Value = option,
-								Action = new CardAction(ActionTypes.PostBack, option, null, option, option, value: option, null)
+								Value = option.Value,
+								Action = new CardAction(ActionTypes.PostBack, option.Value, null, option.Value, option.Value, value: value, null)
 							});
 
 						}
@@ -223,21 +250,37 @@ namespace BamChatBot.Dialogs
 		{
 			var user = new List<User>();
 			var rpaService = new RPAService();
-			var result = rpaService.GetUser(stepContext.Context.Activity.Conversation.Id);
-			if (result.IsSuccess)
-				 user = JsonConvert.DeserializeObject<List<User>>(result.Content);
-			//var _user = await _userAccessor.GetAsync(stepContext.Context, () => new User(), cancellationToken);
-
 			var option = string.Empty;
 			try
 			{
 				this.processDetails = (ProcessDetails)stepContext.Result;
-
 			}
 			catch (Exception)
 			{
 				option = stepContext.Result.ToString();
 			}
+			var promptOption = new PromptOption();
+			try
+			{
+				promptOption = JsonConvert.DeserializeObject<PromptOption>(stepContext.Result.ToString());
+			}
+			catch (Exception) { }
+
+			if (!string.IsNullOrEmpty(promptOption.Id))
+			{
+				if (promptOption.Id != "rpaSuport" && promptOption.Id != "RPAOptions")
+				{
+					processDetails.Action = "pastMenu";
+					return await stepContext.ReplaceDialogAsync(nameof(MainDialog), processDetails, cancellationToken);
+				}
+				option = promptOption.Value;
+			}
+			var result = rpaService.GetUser(stepContext.Context.Activity.Conversation.Id);
+			if (result.IsSuccess)
+				 user = JsonConvert.DeserializeObject<List<User>>(result.Content);
+			//var _user = await _userAccessor.GetAsync(stepContext.Context, () => new User(), cancellationToken);
+
+			
 			if(this.processDetails.User != null)
 			{
 				this.processDetails.User.UserId = user[0].u_user;
@@ -278,10 +321,11 @@ namespace BamChatBot.Dialogs
 					case "bot failed":
 					case "bot not working":
 						processDetails.Action = string.Empty;
+						var value = JsonConvert.SerializeObject(new PromptOption { Id = "FinalStep", Value = "bam?id=rpa_new_request&type=incident" }); 
 						var choices = new List<Choice> { new Choice
 							{
 								Value = "bam?id=rpa_new_request&type=incident",
-								Action = new CardAction(ActionTypes.PostBack, "Click Here", null, "Click Here", "openUrl", "bam?id=rpa_new_request&type=incident", null)
+								Action = new CardAction(ActionTypes.PostBack, "Click Here", null, "Click Here", "openUrl", value: value, null)
 							 }
 						};
 						choices.Add(rpaService.GetMainMenuOption());
@@ -297,19 +341,21 @@ namespace BamChatBot.Dialogs
 					case "help":
 					case "need help":
 					case "help needed":
+						var confirmChoices = rpaService.GetConfirmChoices();
 						return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions
 						{
-							Prompt = (Activity)ChoiceFactory.SuggestedAction(ChoiceFactory.ToChoices(new List<string> { "Yes", "No" }), "You would like to contact RPA Support, is that correct?")
+							Prompt = (Activity)ChoiceFactory.SuggestedAction(confirmChoices, "You would like to contact RPA Support, is that correct?")
 						}, cancellationToken);
 					case "request an enhancement":
 					case "enhancement":
 					case "request":
 					case "new request":
 						processDetails.Action = string.Empty;
+						var enhancementValue = JsonConvert.SerializeObject(new PromptOption { Id = "FinalStep", Value = "bam?id=rpa_new_request&type=enhancement" });
 						var options = new List<Choice> { new Choice
 							{
 								Value = "bam?id=rpa_new_request&type=enhancement",
-								Action = new CardAction(ActionTypes.PostBack, "Click Here", null, "Click Here", "openUrl", "bam?id=rpa_new_request&type=enhancement", null)
+								Action = new CardAction(ActionTypes.PostBack, "Click Here", null, "Click Here", "openUrl", value: enhancementValue, null)
 							 } };
 						options.Add(rpaService.GetMainMenuOption());
 						return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions
@@ -323,22 +369,24 @@ namespace BamChatBot.Dialogs
 					case "new process":
 					case "project request":
 						processDetails.Action = string.Empty;
+						var ideaValue = JsonConvert.SerializeObject(new PromptOption { Id = "FinalStep", Value = "bam?id=sc_cat_item&sys_id=a41ac289db7c6f0004b27709af9619a3" });
 						return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions
 						{
 							Prompt = (Activity)ChoiceFactory.SuggestedAction(new List<Choice> { new Choice
 							{
 								Value = "bam?id=sc_cat_item&sys_id=a41ac289db7c6f0004b27709af9619a3",
-								Action = new CardAction(ActionTypes.PostBack, "Click Here", null, "Click Here", "openUrl", "bam?id=sc_cat_item&sys_id=a41ac289db7c6f0004b27709af9619a3", null)
+								Action = new CardAction(ActionTypes.PostBack, "Click Here", null, "Click Here", "openUrl", value: ideaValue, null)
 							 } ,rpaService.GetMainMenuOption()}, "To Submit an Idea, click Button below")
 							
 						}, cancellationToken);
 					case "Bot Portal":
 					case "bot portal":
 						processDetails.Action = string.Empty;
-						 options = new List<Choice> { new Choice
+						var rpaProcessValue = JsonConvert.SerializeObject(new PromptOption { Id = "FinalStep", Value = "bam?id=rpa_processes" });
+						options = new List<Choice> { new Choice
 							{
 								Value = "bam?id=rpa_processes",
-								Action = new CardAction(ActionTypes.PostBack, "Click Here", null, "Click Here", "openUrl", "bam?id=rpa_processes", null)
+								Action = new CardAction(ActionTypes.PostBack, "Click Here", null, "Click Here", "openUrl", value: rpaProcessValue, null)
 							 } };
 						options.Add(rpaService.GetMainMenuOption());
 						return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions
@@ -376,13 +424,30 @@ namespace BamChatBot.Dialogs
 			var processDetails = this.processDetails;
 			processDetails.Action = string.Empty;
 			var option = stepContext.Result.ToString();
+			var promptOption = new PromptOption();
+			try
+			{
+				promptOption = JsonConvert.DeserializeObject<PromptOption>(stepContext.Result.ToString());
+			}
+			catch (Exception) { }
+
+			if (!string.IsNullOrEmpty(promptOption.Id))
+			{
+				if (promptOption.Id != "Confirm" && promptOption.Id != "mainMenu" && promptOption.Id != "FinalStep")
+				{
+					processDetails.Action = "pastMenu";
+					return await stepContext.ReplaceDialogAsync(nameof(MainDialog), processDetails, cancellationToken);
+				}
+				option = promptOption.Value;
+			}
 			if (option.ToLower() == "yes" || option.ToLower() == "y")
 			{
+				var value = JsonConvert.SerializeObject(new PromptOption { Id = "rpaSuport", Value = "RPASupport@bayview.com" });
 				var choices = new List<Choice>
 				{ new Choice
 							{
 								Value = "rpaSupport",
-								Action = new CardAction(ActionTypes.PostBack, "Click Here", null, "Click Here", "openEmail", "RPASupport@bayview.com", null)
+								Action = new CardAction(ActionTypes.PostBack, "Click Here", null, "Click Here", "openEmail", value: value, null)
 							 } };
 				choices.Add(rpaService.GetMainMenuOption());
 				
@@ -408,6 +473,22 @@ namespace BamChatBot.Dialogs
 			var processDetails = this.processDetails;
 			processDetails.Action = string.Empty;
 			var option = stepContext.Result.ToString();
+			var promptOption = new PromptOption();
+			try
+			{
+				promptOption = JsonConvert.DeserializeObject<PromptOption>(stepContext.Result.ToString());
+			}
+			catch (Exception) { }
+
+			if (!string.IsNullOrEmpty(promptOption.Id))
+			{
+				if (promptOption.Id != "mainMenu" && promptOption.Id != "rpaSuport")
+				{
+					processDetails.Action = "pastMenu";
+					return await stepContext.ReplaceDialogAsync(nameof(MainDialog), processDetails, cancellationToken);
+				}
+				option = promptOption.Value;
+			}
 			if (option.ToLower() == "main menu" || option.ToLower() == "m")
 			{
 				return await stepContext.ReplaceDialogAsync(InitialDialogId, null, cancellationToken);

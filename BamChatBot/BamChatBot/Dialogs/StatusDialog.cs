@@ -62,10 +62,11 @@ namespace BamChatBot.Dialogs
 				var result = rpaService.GetListOfProcess(processes, Convert.ToInt32(user[0].u_last_index));
 				var choices = result.Choices;
 				//var rpaSupportChoice = rpaService.GetRPASupportOption();
+				var menuValue = JsonConvert.SerializeObject(new PromptOption { Id = "menu", Value = "menu"});
 				var mainMenu = new Choice
 				{
 					Value = "menu",//RPASupport@bayview.com
-					Action = new CardAction(ActionTypes.PostBack, "**Main Menu**", null, "**Main Menu**", "**Main Menu**", "menu", null)
+					Action = new CardAction(ActionTypes.PostBack, "**Main Menu**", null, "**Main Menu**", "**Main Menu**", value: menuValue, null)
 
 				};
 				//choices.Add(rpaSupportChoice);
@@ -98,7 +99,22 @@ namespace BamChatBot.Dialogs
 			var rpaService = new RPAService();
 			var processDetails = (ProcessDetails)stepContext.Options;
 			var result = stepContext.Result.ToString();
-			//var _user = await _userAccessor.GetAsync(stepContext.Context, () => new User(), cancellationToken);
+			var promptOption = new PromptOption();
+			try
+			{
+				promptOption = JsonConvert.DeserializeObject<PromptOption>(stepContext.Result.ToString());
+			}
+			catch (Exception) { }
+
+			if (!string.IsNullOrEmpty(promptOption.Id))
+			{
+				if (promptOption.Id != "availableProcesses" && promptOption.Id != "menu" )
+				{
+					processDetails.Action = "pastMenu";
+					return await stepContext.ReplaceDialogAsync(nameof(MainDialog), processDetails, cancellationToken);
+				}
+				result = promptOption.Value;
+			}
 			var _response = rpaService.GetUser(stepContext.Context.Activity.Conversation.Id);
 			var user = new List<User>();
 			if (_response.IsSuccess)
@@ -192,9 +208,10 @@ namespace BamChatBot.Dialogs
 					{
 						text = response.Content;
 					}
+					var choices = rpaService.GetConfirmChoices();
 					return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions
 					{
-						Prompt = (Activity)ChoiceFactory.SuggestedAction(ChoiceFactory.ToChoices(new List<string> { "Yes", "No" }), text + Environment.NewLine + "Do you want to check the status of another process?")
+						Prompt = (Activity)ChoiceFactory.SuggestedAction(choices, text + Environment.NewLine + "Do you want to check the status of another process?")
 						/*Prompt = MessageFactory.Text(text + Environment.NewLine + "Do you want to check the status of another process?"),
 						Choices = ChoiceFactory.ToChoices(new List<string> { "Yes", "No" })*/
 					}, cancellationToken);
@@ -213,6 +230,22 @@ namespace BamChatBot.Dialogs
 
 			var processDetails = (ProcessDetails)stepContext.Options;
 			var result = stepContext.Result.ToString();
+			var promptOption = new PromptOption();
+			try
+			{
+				promptOption = JsonConvert.DeserializeObject<PromptOption>(stepContext.Result.ToString());
+			}
+			catch (Exception) { }
+
+			if (!string.IsNullOrEmpty(promptOption.Id))
+			{
+				if (promptOption.Id != "Confirm")
+				{
+					processDetails.Action = "pastMenu";
+					return await stepContext.ReplaceDialogAsync(nameof(MainDialog), processDetails, cancellationToken);
+				}
+				result = promptOption.Value;
+			}
 			if (result.ToLower() == "yes" || result.ToLower() == "y")
 			{
 				//restart this Dialog

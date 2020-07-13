@@ -93,6 +93,23 @@ namespace BamChatBot.Dialogs
 			var rpaService = new RPAService();
 			var processDetails = (ProcessDetails)stepContext.Options;
 			var result = stepContext.Result.ToString();
+			var promptOption = new PromptOption();
+			try
+			{
+				promptOption = JsonConvert.DeserializeObject<PromptOption>(stepContext.Result.ToString());
+			}
+			catch (Exception) { }
+
+			if (!string.IsNullOrEmpty(promptOption.Id))
+			{
+				if (promptOption.Id != "availableProcesses" && promptOption.Id != "rpaSuport")
+				{
+					processDetails.Action = "pastMenu";
+					return await stepContext.ReplaceDialogAsync(nameof(MainDialog), processDetails, cancellationToken);
+				}
+				result = promptOption.Value;
+			}
+			
 			var response = rpaService.GetUser(stepContext.Context.Activity.Conversation.Id);
 			var user = new List<User>();
 			if (response.IsSuccess)
@@ -122,9 +139,10 @@ namespace BamChatBot.Dialogs
 						rpaService.UpdateUser(user[0], stepContext.Context.Activity.Conversation.Id);
 						//_user.u_last_index = 0;
 						//await _userAccessor.SetAsync(stepContext.Context, _user, cancellationToken);
+						var choices = rpaService.GetConfirmChoices();
 						return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions
 						{
-							Prompt = (Activity)ChoiceFactory.SuggestedAction(ChoiceFactory.ToChoices(new List<string> { "Yes", "No" }), "You have selected " + processDetails.ProcessSelected.Name + ". Stop this process?")
+							Prompt = (Activity)ChoiceFactory.SuggestedAction(choices, "You have selected " + processDetails.ProcessSelected.Name + ". Stop this process?")
 							/*Prompt = MessageFactory.Text("You have selected " + processDetails.ProcessSelected.Name + ". Stop this process?"),
 							Choices = ChoiceFactory.ToChoices(new List<string> { "Yes", "No" })*/
 						}, cancellationToken);
@@ -143,16 +161,35 @@ namespace BamChatBot.Dialogs
 			var processDetails = (ProcessDetails)stepContext.Options;
 			processDetails.Action = string.Empty;
 			var rpaService = new RPAService();
+			var promptOption = new PromptOption();
+			try
+			{
+				promptOption = JsonConvert.DeserializeObject<PromptOption>(stepContext.Result.ToString());
+			}
+			catch (Exception) { }
+
+			if (!string.IsNullOrEmpty(promptOption.Id))
+			{
+				if (promptOption.Id != "Confirm")
+				{
+					processDetails.Action = "pastMenu";
+					return await stepContext.ReplaceDialogAsync(nameof(MainDialog), processDetails, cancellationToken);
+				}
+				result = promptOption.Value;
+			}
+
 			if (result.ToLower() == "yes" || result.ToLower() == "y")
 			{
+				var stop = JsonConvert.SerializeObject(new PromptOption { Id = "Stop", Value = "1" });
+				var terminate = JsonConvert.SerializeObject(new PromptOption { Id = "Stop", Value = "2" });
 				var choices = new List<Choice>
 				{new Choice{
 				Value = "1",
-				Action = new CardAction(ActionTypes.PostBack, "Safely Stop Run", null, "Safely Stop Run", "Safely Stop Run","1", null)
+				Action = new CardAction(ActionTypes.PostBack, "Safely Stop Run", null, "Safely Stop Run", "Safely Stop Run",value: stop, null)
 				},
 				new Choice{
 				Value = "2",
-				Action = new CardAction(ActionTypes.PostBack, "Terminate Process", null, "Terminate Process", "Terminate Process", "2", null)
+				Action = new CardAction(ActionTypes.PostBack, "Terminate Process", null, "Terminate Process", "Terminate Process", value: terminate, null)
 				}};
 				return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions
 				{
@@ -176,6 +213,23 @@ namespace BamChatBot.Dialogs
 			var processDetails = (ProcessDetails)stepContext.Options;
 			processDetails.Action = string.Empty;
 			var rpaService = new RPAService();
+			var promptOption = new PromptOption();
+			try
+			{
+				promptOption = JsonConvert.DeserializeObject<PromptOption>(stepContext.Result.ToString());
+			}
+			catch (Exception) { }
+
+			if (!string.IsNullOrEmpty(promptOption.Id))
+			{
+				if (promptOption.Id != "Stop")
+				{
+					processDetails.Action = "pastMenu";
+					return await stepContext.ReplaceDialogAsync(nameof(MainDialog), processDetails, cancellationToken);
+				}
+				result = promptOption.Value;
+			}
+
 			if (result.ToLower() == "1" || result.ToLower() == "2")
 			{
 				var response = rpaService.StopProcess(processDetails.ProcessSelected.Sys_id, Convert.ToInt32(result));
@@ -212,7 +266,6 @@ namespace BamChatBot.Dialogs
 				return await stepContext.ReplaceDialogAsync(nameof(MainDialog), null, cancellationToken);
 			
 			}
-
 		
 	}
 }

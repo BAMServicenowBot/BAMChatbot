@@ -15,6 +15,7 @@ namespace BamChatBot.Dialogs
 {
 	public class StartProcessDialog : CancelAndHelpDialog
 	{
+
 		public readonly IStatePropertyAccessor<ConversationFlow> _conversationFlow;
 		public StartProcessDialog(IStatePropertyAccessor<ConversationFlow> conversationFlow)
 			: base(nameof(StartProcessDialog))
@@ -25,14 +26,15 @@ namespace BamChatBot.Dialogs
 			AddDialog(new ParametersProcessDialog());
 			AddDialog(new StartProcessSharedDialog());
 			AddDialog(new RobotsDialog());
-			AddDialog(new WaterfallDialog(nameof(WaterfallDialog), new WaterfallStep[]
+			var Steps = new WaterfallStep[]
 			{
 				IntroStepAsync,
 				ShowProcessStepAsync,
 				ConfirmStartProcessStepAsync,
 				StartProcessStepAsync,
 				GoServicenowStepAsync
-			}));
+			};
+			AddDialog(new WaterfallDialog(nameof(WaterfallDialog), Steps));
 
 			// The initial child Dialog to run.
 			InitialDialogId = nameof(WaterfallDialog);
@@ -49,6 +51,7 @@ namespace BamChatBot.Dialogs
 
 		private async Task<DialogTurnResult> ShowProcessStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
 		{
+
 			var processDetails = (ProcessDetails)stepContext.Options;
 			var processes = processDetails.Processes;
 			var text = "Here are your available processes.";
@@ -94,10 +97,27 @@ namespace BamChatBot.Dialogs
 
 		private async Task<DialogTurnResult> ConfirmStartProcessStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
 		{
+			var promptOption = new PromptOption();
 			var rpaService = new RPAService();
 			var processDetails = (ProcessDetails)stepContext.Options;
 			var user = new List<User>();
 			var result = stepContext.Result.ToString();
+			try
+			{
+				promptOption = JsonConvert.DeserializeObject<PromptOption>(stepContext.Result.ToString());
+			}
+			catch (Exception) { }
+
+			if (!string.IsNullOrEmpty(promptOption.Id))
+			{
+				if (promptOption.Id != "availableProcesses" && promptOption.Id != "rpaSuport")
+				{
+					processDetails.Action = "pastMenu";
+					return await stepContext.ReplaceDialogAsync(nameof(MainDialog), processDetails, cancellationToken);
+				}
+				result = promptOption.Value;
+			}
+			
 			var response = rpaService.GetUser(stepContext.Context.Activity.Conversation.Id);
 			if (response.IsSuccess)
 				user = JsonConvert.DeserializeObject<List<User>>(response.Content);
@@ -119,7 +139,6 @@ namespace BamChatBot.Dialogs
 			}
 			else
 			{
-
 				processDetails.ProcessSelected = rpaService.GetSelectedProcess(processDetails.Processes, result);
 				//check if a process was selected, or something was written
 				if (!string.IsNullOrEmpty(processDetails.ProcessSelected.Sys_id))
@@ -131,9 +150,12 @@ namespace BamChatBot.Dialogs
 					//await _userAccessor.SetAsync(stepContext.Context, _user, cancellationToken);
 
 					processDetails.ProcessSelected.StartedBy = "chat_bot";
+
+					var choices = rpaService.GetConfirmChoices();
+
 					return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions
 					{
-						Prompt = (Activity)ChoiceFactory.SuggestedAction(ChoiceFactory.ToChoices(new List<string> { "Yes", "No" }), "You have selected " + processDetails.ProcessSelected.Name + ". Would you like to start this process?")
+						Prompt = (Activity)ChoiceFactory.SuggestedAction(choices, "You have selected " + processDetails.ProcessSelected.Name + ". Would you like to start this process?"),
 						/*Prompt = MessageFactory.Text("You have selected " + processDetails.ProcessSelected.Name + ". Start this process?"),
 						Choices = ChoiceFactory.ToChoices(new List<string> { "Yes", "No" })*/
 					}, cancellationToken);
@@ -150,6 +172,23 @@ namespace BamChatBot.Dialogs
 		{
 			var processDetails = (ProcessDetails)stepContext.Options;
 			var result = stepContext.Result.ToString();
+			var promptOption = new PromptOption();
+			try
+			{
+				promptOption = JsonConvert.DeserializeObject<PromptOption>(stepContext.Result.ToString());
+			}
+			catch (Exception){}
+
+			if (!string.IsNullOrEmpty(promptOption.Id))
+			{
+				if (promptOption.Id != "Confirm")
+				{
+					processDetails.Action = "pastMenu";
+					return await stepContext.ReplaceDialogAsync(nameof(MainDialog), processDetails, cancellationToken);
+				}
+				result = promptOption.Value;
+			}
+
 			if (result.ToLower() == "yes" || result.ToLower() == "y")
 			{
 				var rpaService = new RPAService();
@@ -171,16 +210,17 @@ namespace BamChatBot.Dialogs
 							{
 								//create incident
 								var incident = rpaService.CreateRPAIncident(processDetails.ProcessSelected);
+								var incidentValue = JsonConvert.SerializeObject(new PromptOption { Id = "incident", Value = "bam?id=rpa_request&table=u_robot_incident&sys_id=" + incident.Sys_Id });
 								choices = new List<Choice>
 								{
-new Choice
+                                 new Choice
 								 {
 									 Value = "bam?id=rpa_request&table=u_robot_incident&sys_id="+ incident.Sys_Id,
-									 Action = new CardAction(ActionTypes.PostBack, incident.Number, null, incident.Number, "openUrl", "bam?id=rpa_request&table=u_robot_incident&sys_id=" + incident.Sys_Id, null)
+									 Action = new CardAction(ActionTypes.PostBack, incident.Number, null, incident.Number, "openUrl", value: incidentValue , null)
 								 }
 								};
 								choices.Add(rpaOption);
-								
+
 								return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions
 								{
 									Prompt = (Activity)ChoiceFactory.SuggestedAction(choices, "Process " + processDetails.ProcessSelected.Name + " requires an asset associated to your user, an incident has been opened to RPA Support." + Environment.NewLine + "Click incident number below to open it")
@@ -188,21 +228,22 @@ new Choice
 							}
 							else
 							{
+								var assetValue = JsonConvert.SerializeObject(new PromptOption { Id = "asset", Value = "bam?id=rpa_process_assets&process=" + processDetails.ProcessSelected.Sys_id });
 								choices = new List<Choice>
 								{
 								 new Choice
 								 {
 									 Value = "bam?id=rpa_process_assets&process="+ processDetails.ProcessSelected.Sys_id,
-									 Action = new CardAction(ActionTypes.PostBack, "Update Asset", null, "Update Asset", "openUrl", "bam?id=rpa_process_assets&process=" + processDetails.ProcessSelected.Sys_id, null)
+									 Action = new CardAction(ActionTypes.PostBack, "Update Asset", null, "Update Asset", "openUrl", value: assetValue, null)
 								 } };
 								choices.Add(rpaOption);
 								//send the user to SN UI page
 								return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions
 								{
-									Prompt = (Activity)ChoiceFactory.SuggestedAction(choices, response.Body + Environment.NewLine + "Please enter them before running the process by pressing Update Asset button below")
+									Prompt = (Activity)ChoiceFactory.SuggestedAction(choices, response.Body + Environment.NewLine + "Please enter them before running the process by pressing Update Asset button below.")
 								}, cancellationToken);
 							}
-							
+
 						}
 					}
 					if (processDetails.ProcessSelected.Releases.Any(r => r.robots.Count > 1))
@@ -249,6 +290,23 @@ new Choice
 			var processDetails = (ProcessDetails)stepContext.Options;
 			processDetails.Action = string.Empty;
 			var option = stepContext.Result.ToString();
+			var promptOption = new PromptOption();
+			try
+			{
+				promptOption = JsonConvert.DeserializeObject<PromptOption>(stepContext.Result.ToString());
+			}
+			catch (Exception) { }
+
+			if (!string.IsNullOrEmpty(promptOption.Id))
+			{
+				if (promptOption.Id != "mainMenu" && promptOption.Id != "incident" && promptOption.Id != "asset")
+				{
+					processDetails.Action = "pastMenu";
+					return await stepContext.ReplaceDialogAsync(nameof(MainDialog), processDetails, cancellationToken);
+				}
+				option = promptOption.Value;
+			}
+
 			if (option.ToLower() == "main menu" || option.ToLower() == "m")
 			{
 				return await stepContext.ReplaceDialogAsync(nameof(MainDialog), null, cancellationToken);

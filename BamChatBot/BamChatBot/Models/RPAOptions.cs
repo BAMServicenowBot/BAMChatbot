@@ -8,25 +8,21 @@ namespace BamChatBot.Models
 {
 	public class RPAOptions
 	{
-		public List<string> Options { get; private set; }
+		public List<PromptOption> Options { get; private set; }
 		public RPAOptions()
 		{
-		
-			Options = new List<string>
+			Options = new List<PromptOption>
 			{
-				"Start Process",
-				"Process Status",
-				"Stop a Process",
-				"Report an Issue",
-				"Request an Enhancement",
-				"Submit a New Idea",
-				"**Contact RPA Support**",
-				"Bot Portal",
-				"End Chat"
+				new PromptOption {Id = "RPAOptions", Value = "Start Process"},
+				new PromptOption {Id = "RPAOptions", Value = "Process Status"},
+				new PromptOption {Id = "RPAOptions", Value = "Stop a Process"},
+				new PromptOption {Id = "RPAOptions", Value = "Report an Issue"},
+				new PromptOption {Id = "RPAOptions", Value = "Request an Enhancement"},
+				new PromptOption {Id = "RPAOptions", Value = "Submit a New Idea"},
+				new PromptOption {Id = "RPAOptions", Value = "**Contact RPA Support**"},
+				new PromptOption {Id = "RPAOptions", Value = "Bot Portal"},
+				new PromptOption {Id = "RPAOptions", Value = "End Chat"}
 			};
-			
-
-
 		}
 	}
 }

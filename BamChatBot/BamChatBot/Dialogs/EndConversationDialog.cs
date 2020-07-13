@@ -1,7 +1,9 @@
-﻿using Microsoft.Bot.Builder;
+﻿using BamChatBot.Models;
+using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Builder.Dialogs.Choices;
 using Microsoft.Bot.Schema;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -37,16 +39,18 @@ namespace BamChatBot.Dialogs
 				message = "Typing is not a valid option for this prompt"+Environment.NewLine+"Please CLICK one of the options below!";
 				processDetails.Action = string.Empty;
 			}
-				var choices = new List<Choice> {
+			var yesOption = JsonConvert.SerializeObject(new PromptOption { Id = "Confirm", Value = "button" });
+			var noOption = JsonConvert.SerializeObject(new PromptOption { Id = "Confirm", Value = "no" });
+			var choices = new List<Choice> {
 				new Choice
 							{
 								Value = "button",
-								Action = new CardAction(ActionTypes.PostBack, "Yes", null, "Yes", "exitChat", value : "button", null)
+								Action = new CardAction(ActionTypes.PostBack, "Yes", null, "Yes", "exitChat", value : yesOption, null)
 							 },
 				new Choice
 				{
 					Value = "no",
-					Action = new CardAction(ActionTypes.PostBack, "No", null, "No", "No", value:"no", null)
+					Action = new CardAction(ActionTypes.PostBack, "No", null, "No", "No", value: noOption, null)
 				} };
 			return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions
 			{
@@ -62,6 +66,22 @@ namespace BamChatBot.Dialogs
 			var processDetails = (ProcessDetails)stepContext.Options;
 			processDetails.Action = "typed";
 			var result = stepContext.Result.ToString();
+			var promptOption = new PromptOption();
+			try
+			{
+				promptOption = JsonConvert.DeserializeObject<PromptOption>(stepContext.Result.ToString());
+			}
+			catch (Exception) { }
+
+			if (!string.IsNullOrEmpty(promptOption.Id))
+			{
+				if (promptOption.Id != "Confirm")
+				{
+					processDetails.Action = "pastMenu";
+					return await stepContext.ReplaceDialogAsync(nameof(MainDialog), processDetails, cancellationToken);
+				}
+				result = promptOption.Value;
+			}
 			if (result == "button")
 			{
 				processDetails.Action = string.Empty;

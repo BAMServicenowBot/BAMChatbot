@@ -5,6 +5,7 @@ using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Builder.Dialogs.Choices;
 using Microsoft.Bot.Schema;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -48,54 +49,7 @@ namespace BamChatBot.Dialogs
 				}
 
 			}
-
-			/*var choices = new[] { "Submit"};
-			var card = new AdaptiveCard("1.2.4");
-			/*{
-				// Use LINQ to turn the choices into submit actions
-				Actions = choices.Select(choice => new AdaptiveSubmitAction
-				{
-					Title = choice,
-					Data = choice,  // This will be a string
-				}).ToList<AdaptiveAction>(),
-			};*/
-			/*card.Body.Add(new AdaptiveTextBlock()
-			{
-				Text = "Select bot(s) below.",
-				Size = AdaptiveTextSize.Default,
-				Weight = AdaptiveTextWeight.Bolder
-			});
-
-			card.Body.Add(new AdaptiveChoiceSetInput()
-			{
-				Id = "choiceset1",
-				Choices = new List<AdaptiveChoice>()
-	{
-		new AdaptiveChoice(){
-			Title="answer1",
-			Value="answer1"
-		},
-		new AdaptiveChoice(){
-			Title="answer2",
-			Value="answer2"
-		},
-		new AdaptiveChoice(){
-			Title="answer3",
-			Value="answer3"
-		}
-	},
-				Style = AdaptiveChoiceInputStyle.Expanded,
-				IsMultiSelect = true
-			});
-			card.Actions.Add(new AdaptiveSubmitAction()
-			{
-				Title = "Submit"
-			});
-
-			/*var message 
-
-			message.Attachments.Add(new Attachment() { Content = card, ContentType = "application/vnd.microsoft.card.adaptive" });
-			await stepContext.Context.PostAsync(message);*/
+			
 			if (string.IsNullOrEmpty(bot.id))
 			{
 				processDetails.ProcessSelected.FirstBot = true;
@@ -158,10 +112,11 @@ namespace BamChatBot.Dialogs
 					processDetails.ProcessSelected.FirstBot = false;
 				}
 				processDetails.ProcessSelected.Bot = bot;
-
+				var rpaService = new RPAService();
+				var choices = rpaService.GetConfirmChoices();
 				return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions
 				{
-					Prompt = (Activity)ChoiceFactory.SuggestedAction(ChoiceFactory.ToChoices(new List<string> { "Yes", "No" }), message + Environment.NewLine + bot.name)
+					Prompt = (Activity)ChoiceFactory.SuggestedAction(choices, message + Environment.NewLine + bot.name)
 				}, cancellationToken);
 			}
 
@@ -171,6 +126,22 @@ namespace BamChatBot.Dialogs
 		{
 			var processDetails = (ProcessDetails)stepContext.Options;
 			var result = stepContext.Result.ToString();
+			var promptOption = new PromptOption();
+			try
+			{
+				promptOption = JsonConvert.DeserializeObject<PromptOption>(stepContext.Result.ToString());
+			}
+			catch (Exception) { }
+
+			if (!string.IsNullOrEmpty(promptOption.Id))
+			{
+				if (promptOption.Id != "Confirm")
+				{
+					processDetails.Action = "pastMenu";
+					return await stepContext.ReplaceDialogAsync(nameof(MainDialog), processDetails, cancellationToken);
+				}
+				result = promptOption.Value;
+			}
 
 			foreach (var r in processDetails.ProcessSelected.Releases)
 			{

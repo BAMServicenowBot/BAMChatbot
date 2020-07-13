@@ -53,8 +53,20 @@ namespace BamChatBot.Dialogs
 				rpaService.DeactivatedConversationFlow(processDetails.CurrentQuestion.sys_id, stepContext.Context.Activity.Conversation.Id);
 				if (processDetails.CurrentQuestion.u_type.Contains("Bool"))
 				{
-					
-					return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions { Prompt = (Activity)ChoiceFactory.SuggestedAction(ChoiceFactory.ToChoices(new List<string> { "true", "false" }), text + Environment.NewLine + "For " + processDetails.CurrentQuestion.u_param_name.UppercaseFirst()+ " choose one option below.") }, cancellationToken);
+					var boolParamTrue = JsonConvert.SerializeObject(new PromptOption { Id = "boolParam", Value = "true" });
+					var boolParamFalse = JsonConvert.SerializeObject(new PromptOption { Id = "boolParam", Value = "false" });
+					var choices = new List<Choice> {
+						new Choice
+							{
+								Value = "true",
+								Action = new CardAction(ActionTypes.PostBack, "true", null, "true", "true", value: boolParamTrue, null)
+							},
+						new Choice
+							{
+								Value = "false",
+								Action = new CardAction(ActionTypes.PostBack, "false", null, "false", "false", value: boolParamFalse, null)
+							} };
+					return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions { Prompt = (Activity)ChoiceFactory.SuggestedAction(choices, text + Environment.NewLine + "For " + processDetails.CurrentQuestion.u_param_name.UppercaseFirst()+ " choose one option below.") }, cancellationToken);
 				}
 				else
 				{
@@ -83,7 +95,23 @@ namespace BamChatBot.Dialogs
 			{
 				value = stepContext.Result.ToString();
 			}
-			
+			var promptOption = new PromptOption();
+			try
+			{
+				promptOption = JsonConvert.DeserializeObject<PromptOption>(stepContext.Result.ToString());
+			}
+			catch (Exception) { }
+
+			if (!string.IsNullOrEmpty(promptOption.Id))
+			{
+				if (promptOption.Id != "boolParam")
+				{
+					processDetails.Action = "pastMenu";
+					return await stepContext.ReplaceDialogAsync(nameof(MainDialog), processDetails, cancellationToken);
+				}
+				value = promptOption.Value;
+			}
+
 			var rpaService = new RPAService();
 			//have entered all params
 			if (string.IsNullOrEmpty(processDetails.CurrentQuestion.sys_id))

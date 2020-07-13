@@ -1,8 +1,10 @@
-﻿using BamChatBot.Services;
+﻿using BamChatBot.Models;
+using BamChatBot.Services;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Builder.Dialogs.Choices;
 using Microsoft.Bot.Schema;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,12 +31,13 @@ namespace BamChatBot.Dialogs
 		private async Task<DialogTurnResult> IntroStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
 		{
 			var processDetails = (ProcessDetails)stepContext.Options;
+			var value = JsonConvert.SerializeObject(new PromptOption { Id = "rpaSuport", Value = "RPASupport@bayview.com" });
 			var choices = new List<Choice>
 	 {
   new Choice
 		   {
 	Value = "rpaSupport",//RPASupport@bayview.com
-Action = new CardAction(ActionTypes.PostBack, "To Contact RPA Support click here", null, "To Contact RPA Support click here", "openEmail", "RPASupport@bayview.com", null)
+Action = new CardAction(ActionTypes.PostBack, "To Contact RPA Support click here", null, "To Contact RPA Support click here", "openEmail", value: value, null)
 		 }
 };
 			/*var rpaService = new RPAService();
@@ -51,7 +54,23 @@ Action = new CardAction(ActionTypes.PostBack, "To Contact RPA Support click here
 			var processDetails = (ProcessDetails)stepContext.Options;
 			var result = stepContext.Result.ToString();
 			processDetails.Action = string.Empty;
-			if(result.ToLower() == "menu" || result.ToLower() == "m")
+			var promptOption = new PromptOption();
+			try
+			{
+				promptOption = JsonConvert.DeserializeObject<PromptOption>(stepContext.Result.ToString());
+			}
+			catch (Exception) { }
+
+			if (!string.IsNullOrEmpty(promptOption.Id))
+			{
+				if (promptOption.Id != "rpaSuport")
+				{
+					processDetails.Action = "pastMenu";
+					return await stepContext.ReplaceDialogAsync(nameof(MainDialog), processDetails, cancellationToken);
+				}
+				result = promptOption.Value;
+			}
+			if (result.ToLower() == "menu" || result.ToLower() == "m")
 			{
 				return await stepContext.ReplaceDialogAsync(nameof(MainDialog), null, cancellationToken);
 			}
@@ -59,7 +78,7 @@ Action = new CardAction(ActionTypes.PostBack, "To Contact RPA Support click here
 			{
 				return await stepContext.ReplaceDialogAsync(nameof(MainDialog), processDetails, cancellationToken);
 			}
-			
+
 		}
 
 	}

@@ -35,7 +35,7 @@ namespace BamChatBot.Services
 
 		internal string GetInstanceName()
 		{
-			var instance = "bayviewuat";
+			var instance = "bayviewdev";
 			return instance;
 		}
 
@@ -436,10 +436,11 @@ namespace BamChatBot.Services
 
 		internal Choice GetMainMenuOption()
 		{
+			var value = JsonConvert.SerializeObject(new PromptOption { Id = "mainMenu", Value = "Main Menu" });
 			return new Choice
 			{
 				Value = "Main Menu",
-				Action = new CardAction(ActionTypes.PostBack, "Main Menu", null, "Main Menu", "Main Menu", "Main Menu", null)
+				Action = new CardAction(ActionTypes.PostBack, "Main Menu", null, "Main Menu", "Main Menu", value: value, null)
 			};
 		}
 
@@ -732,6 +733,7 @@ namespace BamChatBot.Services
 
 			foreach (var process in tempProcesses)
 			{
+				var choiceValue = JsonConvert.SerializeObject(new PromptOption { Id = "availableProcesses", Value = process.Sys_id });
 				var name = process.Name;
 				if (process.Sys_id != "Load_More")
 				{
@@ -740,7 +742,7 @@ namespace BamChatBot.Services
 				choices.Add(new Choice
 				{
 					Value = process.Sys_id,
-					Action = new CardAction(ActionTypes.PostBack, name, null, process.Name, process.Name, process.Sys_id, null)
+					Action = new CardAction(ActionTypes.PostBack, name, null, process.Name, process.Name, value: choiceValue, null)
 				});
 			}
 
@@ -766,13 +768,31 @@ namespace BamChatBot.Services
 
 		internal Choice GetRPASupportOption()
 		{
-
+			var value = JsonConvert.SerializeObject(new PromptOption { Id = "rpaSuport", Value = "RPASupport@bayview.com" });
 			return new Choice
 			{
 				Value = "rpaSupport",//RPASupport@bayview.com
-				Action = new CardAction(ActionTypes.PostBack, "**Contact RPA Support**", null, "**Contact RPA Support**", "openEmail", "RPASupport@bayview.com", null)
+				Action = new CardAction(ActionTypes.PostBack, "**Contact RPA Support**", null, "**Contact RPA Support**", "openEmail", value: value, null)
 
 			};
+		}
+
+		internal List<Choice> GetConfirmChoices()
+		{
+			var yesOption = JsonConvert.SerializeObject(new PromptOption { Id = "Confirm", Value = "Yes" });
+			var noOption = JsonConvert.SerializeObject(new PromptOption { Id = "Confirm", Value = "No" });
+			var choices = new List<Choice> {
+						new Choice
+							{
+								Value = "Yes",
+								Action = new CardAction(ActionTypes.PostBack, "Yes", null, "Yes", "Yes", value: yesOption, null)
+							},
+						new Choice
+							{
+								Value = "No",
+								Action = new CardAction(ActionTypes.PostBack, "No", null, "No", "No", value: noOption, null)
+							} };
+			return choices;
 		}
 	}
 }

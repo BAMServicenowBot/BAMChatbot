@@ -84,9 +84,10 @@ namespace BamChatBot.Dialogs
 				{
 					processDetails.AttemptCount = 0;
 					processDetails.Jobs = JsonConvert.DeserializeObject<List<Job>>(response.Content);
+					var choices = rpaService.GetConfirmChoices();
 					return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions
 					{
-						Prompt = (Activity)ChoiceFactory.SuggestedAction(ChoiceFactory.ToChoices(new List<string> { "Yes", "No" }), processDetails.ProcessSelected.Name + "  process has started and you will be notified when it finishes."+Environment.NewLine+" Do you want to run another process?")
+						Prompt = (Activity)ChoiceFactory.SuggestedAction(choices, processDetails.ProcessSelected.Name + "  process has started and you will be notified when it finishes."+Environment.NewLine+" Do you want to run another process?")
 					}, cancellationToken);
 				}
 			}
@@ -102,8 +103,24 @@ namespace BamChatBot.Dialogs
 		private async Task<DialogTurnResult> StartAnotherProcessStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
 		{
 			var processDetails = (ProcessDetails)stepContext.Options;
-
 			var action = stepContext.Result.ToString();
+			var promptOption = new PromptOption();
+			try
+			{
+				promptOption = JsonConvert.DeserializeObject<PromptOption>(stepContext.Result.ToString());
+			}
+			catch (Exception) { }
+
+			if (!string.IsNullOrEmpty(promptOption.Id))
+			{
+				if (promptOption.Id != "Confirm")
+				{
+					processDetails.Action = "pastMenu";
+					return await stepContext.ReplaceDialogAsync(nameof(MainDialog), processDetails, cancellationToken);
+				}
+				action = promptOption.Value;
+			}
+
 			if (action.ToLower() == "yes" || action.ToLower() == "y")
 			{
 				//start StartProcessDialog Dialog
