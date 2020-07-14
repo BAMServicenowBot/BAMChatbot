@@ -163,6 +163,17 @@ namespace BamChatBot.Dialogs
 
 			try
 			{
+				var promptOption = new PromptOption();
+				try
+				{
+					promptOption = JsonConvert.DeserializeObject<PromptOption>(stepContext.Context.Activity.Text);
+				}
+				catch (Exception) { }
+				if (!string.IsNullOrEmpty(promptOption.Value))
+				{
+					stepContext.Context.Activity.Text = promptOption.Value;
+				}
+
 				var luisResult = await _luisRecognizer.RecognizeAsync<Process>(stepContext.Context, cancellationToken);
 				switch (luisResult.TopIntent().intent)
 				{
@@ -459,6 +470,7 @@ namespace BamChatBot.Dialogs
 			}
 			else if(option.ToLower() == "main menu" || option.ToLower() == "m")
 			{
+				
 				return await stepContext.ReplaceDialogAsync(InitialDialogId, null, cancellationToken);
 			}
 			else
@@ -491,6 +503,7 @@ namespace BamChatBot.Dialogs
 			}
 			if (option.ToLower() == "main menu" || option.ToLower() == "m")
 			{
+				
 				return await stepContext.ReplaceDialogAsync(InitialDialogId, null, cancellationToken);
 			}
 			return await stepContext.ReplaceDialogAsync(InitialDialogId, processDetails, cancellationToken);

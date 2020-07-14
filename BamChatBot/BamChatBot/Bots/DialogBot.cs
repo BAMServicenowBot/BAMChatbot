@@ -3,6 +3,7 @@
 //
 // Generated with Bot Builder V4 SDK Template for Visual Studio CoreBot v4.6.2
 
+using System;
 using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading;
@@ -78,7 +79,19 @@ namespace BamChatBot.Bots
 
 		protected override async Task OnMessageActivityAsync(ITurnContext<IMessageActivity> turnContext, CancellationToken cancellationToken)
 		{
-			if (turnContext.Activity.Text == "Start Process")
+			var commands = new Commands();
+			var promptOption = new PromptOption();
+			try
+			{
+				promptOption = JsonConvert.DeserializeObject<PromptOption>(turnContext.Activity.Text);
+			}
+			catch (Exception) { }
+			if (!string.IsNullOrEmpty(promptOption.Value))
+			{
+				turnContext.Activity.Text = promptOption.Value;
+			}
+			var startCommands = commands.GetStartCommands();
+			if (startCommands.Contains(turnContext.Activity.Text.ToLower()))
 			{
 				AddConversationReference(turnContext.Activity as Activity);
 			}
@@ -111,7 +124,6 @@ namespace BamChatBot.Bots
 
 			}
 		}
-
 
 	}
 }

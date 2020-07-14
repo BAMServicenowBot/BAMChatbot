@@ -55,14 +55,10 @@ namespace BamChatBot.Controllers
 
 			foreach (var conversationReference in _conversationReferences.Values)
 			{
-				//if (conversationReference.ActivityId == processStatus.ActivityId)
-				//if(this._user.UserId == processStatus.ChatbotUser)
-				//{
 				await ((BotAdapter)_adapter).ContinueConversationAsync(_appId, conversationReference, BotCallback, default(CancellationToken));
-				//break;
-				//}
-
+				break;
 			}
+
 			var message = MessageFactory.Text("The " + _processStatus.Process + " process has finished. Here is the run status." + Environment.NewLine +
 				"Start Time: " + _processStatus.Start + Environment.NewLine +
 				"End Time: " + _processStatus.End + Environment.NewLine +
