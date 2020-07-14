@@ -23,6 +23,7 @@ namespace BamChatBot.Models
 		public bool IsCompletation { get; set; }
 		public string ConversationId { get; set; }
 		public string Info { get; set; }
+		public string Robot { get; set; }
 
 	}
 

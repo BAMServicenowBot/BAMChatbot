@@ -103,10 +103,11 @@ namespace BamChatBot.Controllers
 					var reason = string.Empty;
 					if (_processStatus.State.value == "Faulted")
 					{
-						reason = "Reason: " + _processStatus.Info;
+						reason = "Reason: " + _processStatus.Info + Environment.NewLine;
 					}
 					message = "Process " + _processStatus.Process + " has finished with the following updates:" + Environment.NewLine +
 			"Status: " + _processStatus.State.label + Environment.NewLine + reason +
+			"Bot Name: "+_processStatus.Robot+ Environment.NewLine+
 			startTime +
 			endTime +
 			"Successful Executions: " + _processStatus.SuccessfulExecutions + Environment.NewLine +
@@ -118,7 +119,8 @@ namespace BamChatBot.Controllers
 								//"Status: " + _processStatus.State + Environment.NewLine +
 								include +
 								"Total Transactions Successful: " + Convert.ToInt32(_processStatus.TotalTransSuccessful) + Environment.NewLine +
-								"Total Exceptions: " + Convert.ToInt32(_processStatus.TotalExceptions);
+								"Total Exceptions: " + Convert.ToInt32(_processStatus.TotalExceptions) + Environment.NewLine +
+								"Bot Name: " + _processStatus.Robot;
 				}
 
 				var noti = MessageFactory.Text(message);
