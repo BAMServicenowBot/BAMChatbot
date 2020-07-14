@@ -80,21 +80,30 @@ namespace BamChatBot.Bots
 		protected override async Task OnMessageActivityAsync(ITurnContext<IMessageActivity> turnContext, CancellationToken cancellationToken)
 		{
 			var commands = new Commands();
+			var startCommands = commands.GetStartCommands();
 			var promptOption = new PromptOption();
 			try
 			{
 				promptOption = JsonConvert.DeserializeObject<PromptOption>(turnContext.Activity.Text);
 			}
-			catch (Exception) { }
+			catch (Exception){}
+
 			if (!string.IsNullOrEmpty(promptOption.Value))
 			{
-				turnContext.Activity.Text = promptOption.Value;
+				if (startCommands.Contains(promptOption.Value.ToLower()))
+				{
+					AddConversationReference(turnContext.Activity as Activity);
+				}
 			}
-			var startCommands = commands.GetStartCommands();
-			if (startCommands.Contains(turnContext.Activity.Text.ToLower()))
+			else
 			{
-				AddConversationReference(turnContext.Activity as Activity);
+				if (startCommands.Contains(turnContext.Activity.Text.ToLower()))
+				{
+					AddConversationReference(turnContext.Activity as Activity);
+				}
 			}
+			
+			
 			Logger.LogInformation("Running dialog with Message Activity.");
 
 			// Run the Dialog with the new message Activity.
