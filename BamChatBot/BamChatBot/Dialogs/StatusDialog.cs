@@ -200,7 +200,8 @@ namespace BamChatBot.Dialogs
 								endTime +
 								include +
 								"Total Transactions Successful: " +Convert.ToInt32(item.TotalTransSuccessful) + Environment.NewLine +
-								"Total Exceptions: " + Convert.ToInt32(item.TotalExceptions);
+								"Total Exceptions: " + Convert.ToInt32(item.TotalExceptions) + Environment.NewLine +
+								"Bot Name: " + item.Robot; 
 						}
 						
 					}
