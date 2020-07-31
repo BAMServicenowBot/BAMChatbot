@@ -46,7 +46,7 @@ namespace BamChatBot.Dialogs
 				}
 				else if(processDetails.AttemptCount != 0 && processDetails.CurrentQuestion.u_last_question_index == 0)
 				{
-					text = "Input parameters entered are wrong, please re-enter them below.";
+					text = "Input parameters entered are incorrect, please re-enter them below.";
 				}
 
 				//delete record from SN
