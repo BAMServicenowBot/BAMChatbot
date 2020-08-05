@@ -193,7 +193,7 @@ namespace BamChatBot.Dialogs
 				}};
 				return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions
 				{
-					Prompt = (Activity)ChoiceFactory.SuggestedAction(choices, "Please select one of the strategies below.")
+					Prompt = (Activity)ChoiceFactory.SuggestedAction(choices, "Please select one of the buttons below to Stop the Process:")
 				}, cancellationToken);
 			}
 			else if (result.ToLower() == "no" || result.ToLower() == "n")
