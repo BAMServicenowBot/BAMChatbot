@@ -109,7 +109,7 @@ namespace BamChatBot.Dialogs
 				}
 				result = promptOption.Value;
 			}
-			
+
 			var response = rpaService.GetUser(stepContext.Context.Activity.Conversation.Id);
 			var user = new List<User>();
 			if (response.IsSuccess)
@@ -153,8 +153,8 @@ namespace BamChatBot.Dialogs
 					}
 			}
 		}
-		
-			private async Task<DialogTurnResult> SelectStrategyStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
+
+		private async Task<DialogTurnResult> SelectStrategyStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
 		{
 			var msg = string.Empty;
 			var result = stepContext.Result.ToString();
@@ -180,9 +180,26 @@ namespace BamChatBot.Dialogs
 
 			if (result.ToLower() == "yes" || result.ToLower() == "y")
 			{
-				var stop = JsonConvert.SerializeObject(new PromptOption { Id = "Stop", Value = "1" });
-				var terminate = JsonConvert.SerializeObject(new PromptOption { Id = "Stop", Value = "2" });
-				var choices = new List<Choice>
+				//check if process is queued
+				if (!string.IsNullOrEmpty(processDetails.ProcessSelected.queuedId))
+				{
+					var cancel = JsonConvert.SerializeObject(new PromptOption { Id = "Stop", Value = "3" });
+					var choices = new List<Choice>
+				{new Choice{
+				Value = "3",
+				Action = new CardAction(ActionTypes.PostBack, "Cancel Queued Process", null, "Cancel Queued Process", "Cancel Queued Process",value: cancel, null)
+				} };
+					choices.Add(rpaService.GetMainMenuOption());
+					return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions
+					{
+						Prompt = (Activity)ChoiceFactory.SuggestedAction(choices, "Process "+ processDetails.ProcessSelected.Name + " will be deleted from the queue and will not run." + Environment.NewLine+"Please click on below button to Cancel Queued Process")
+					}, cancellationToken);
+				}
+				else
+				{
+					var stop = JsonConvert.SerializeObject(new PromptOption { Id = "Stop", Value = "1" });
+					var terminate = JsonConvert.SerializeObject(new PromptOption { Id = "Stop", Value = "2" });
+					var choices = new List<Choice>
 				{new Choice{
 				Value = "1",
 				Action = new CardAction(ActionTypes.PostBack, "Safely Stop Run", null, "Safely Stop Run", "Safely Stop Run",value: stop, null)
@@ -191,10 +208,11 @@ namespace BamChatBot.Dialogs
 				Value = "2",
 				Action = new CardAction(ActionTypes.PostBack, "Terminate Process", null, "Terminate Process", "Terminate Process", value: terminate, null)
 				}};
-				return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions
-				{
-					Prompt = (Activity)ChoiceFactory.SuggestedAction(choices, "Please select one of the buttons below to Stop the Process:")
-				}, cancellationToken);
+					return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions
+					{
+						Prompt = (Activity)ChoiceFactory.SuggestedAction(choices, "Please select one of the buttons below to Stop the Process:")
+					}, cancellationToken);
+				}
 			}
 			else if (result.ToLower() == "no" || result.ToLower() == "n")
 			{
@@ -204,9 +222,9 @@ namespace BamChatBot.Dialogs
 			{
 				return await stepContext.ReplaceDialogAsync(nameof(MainDialog), null, cancellationToken);
 			}
-			}
+		}
 
-			private async Task<DialogTurnResult> StopProcessStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
+		private async Task<DialogTurnResult> StopProcessStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
 		{
 			var msg = string.Empty;
 			var result = stepContext.Result.ToString();
@@ -222,7 +240,7 @@ namespace BamChatBot.Dialogs
 
 			if (!string.IsNullOrEmpty(promptOption.Id))
 			{
-				if (promptOption.Id != "Stop")
+				if (promptOption.Id != "Stop" && promptOption.Id !="mainMenu")
 				{
 					processDetails.Action = "pastMenu";
 					return await stepContext.ReplaceDialogAsync(nameof(MainDialog), processDetails, cancellationToken);
@@ -230,9 +248,18 @@ namespace BamChatBot.Dialogs
 				result = promptOption.Value;
 			}
 
-			if (result.ToLower() == "1" || result.ToLower() == "2")
+			if (result.ToLower() == "1" || result.ToLower() == "2" || result.ToLower() == "3")
 			{
-				var response = rpaService.StopProcess(processDetails.ProcessSelected.Sys_id, Convert.ToInt32(result));
+				var response = new APIResponse();
+				if(result.ToLower() == "3")
+				{
+					response = rpaService.CancelQueuedProcess(processDetails.ProcessSelected);
+				}
+				else
+				{
+					response = rpaService.StopProcess(processDetails.ProcessSelected.Sys_id, Convert.ToInt32(result));
+				}
+				
 				if (response.IsSuccess)
 				{
 					if (!string.IsNullOrEmpty(response.Content))
@@ -241,7 +268,10 @@ namespace BamChatBot.Dialogs
 					}
 					else
 					{
-						msg = "Request to Stop Process "+ processDetails.ProcessSelected.Name + " Submitted. Please allow a few minutes for the status to refresh.";
+						if (result.ToLower() == "3")
+							msg = "Process " + processDetails.ProcessSelected.Name + " has been successfully deleted from the queue.";
+						else
+							msg = "Request to Stop Process " + processDetails.ProcessSelected.Name + " Submitted. Please allow a few minutes for the status to refresh.";
 					}
 				}
 				else
@@ -263,9 +293,10 @@ namespace BamChatBot.Dialogs
 				return await stepContext.ReplaceDialogAsync(nameof(MainDialog), processDetails, cancellationToken);
 			}
 			
+
 				return await stepContext.ReplaceDialogAsync(nameof(MainDialog), null, cancellationToken);
-			
-			}
-		
+
+		}
+
 	}
 }

@@ -414,6 +414,39 @@ namespace BamChatBot.Services
 			}
 			return apiResponse;
 		}
+		internal APIResponse CancelQueuedProcess(ProcessModel process)
+		{
+			var apiResponse = new APIResponse();
+			var apiPath = GetApiPath();
+			var url = apiPath + "cancelQueuedProcess";
+			HttpClient client = new HttpClient();
+			client.BaseAddress = new Uri(url);
+			//add basic authorization
+			AddAuthorization(client);
+			try
+			{
+				var content = new StringContent(JsonConvert.SerializeObject(process), Encoding.UTF8, "application/json");
+				var response = client.PostAsync(url, content).Result;
+				var obj = response.Content.ReadAsStringAsync();
+				apiResponse = new APIResponse
+				{
+					Content = obj.Result,
+					IsSuccess = response.IsSuccessStatusCode
+				};
+				if (!apiResponse.IsSuccess)
+				{
+					//get rid of {"result":} wrapper from response
+					var result = ClearResponse(obj.Result);
+					apiResponse = JsonConvert.DeserializeObject<APIResponse>(result);
+				}
+			}
+			catch (Exception ex)
+			{
+				apiResponse.Content = ex.Message;
+			}
+			
+			return apiResponse;
+		}
 
 		internal void SaveUser(User user)
 		{
@@ -733,15 +766,21 @@ namespace BamChatBot.Services
 
 			foreach (var process in tempProcesses)
 			{
-				var choiceValue = JsonConvert.SerializeObject(new PromptOption { Id = "availableProcesses", Value = process.Sys_id });
+				var value = process.Sys_id;
+				if (process.Name.Contains("[Queued]"))
+				{
+					value += "[Queued]";
+				}
+				var choiceValue = JsonConvert.SerializeObject(new PromptOption { Id = "availableProcesses", Value = value });
 				var name = process.Name;
 				if (process.Sys_id != "Load_More")
 				{
 					//name+= " [" + process.LastRun.State + "]";
 				}
+				
 				choices.Add(new Choice
 				{
-					Value = process.Sys_id,
+					Value = value,
 					Action = new CardAction(ActionTypes.PostBack, name, null, process.Name, process.Name, value: choiceValue, null)
 				});
 			}
@@ -755,10 +794,19 @@ namespace BamChatBot.Services
 
 		internal ProcessModel GetSelectedProcess(List<ProcessModel> processes, string value)
 		{
+
 			var processSelected = new ProcessModel();
 			foreach (var item in processes)
 			{
-				if (value == item.Sys_id)
+				if (value.Contains("[Queued]"))
+				{
+					var id = value.Replace("[Queued]", "");
+					if (id.Trim() == item.Sys_id && item.Name.Contains("[Queued]"))
+					{
+						processSelected = item;
+					}
+				}
+				else if (value.Trim() == item.Sys_id && !item.Name.Contains("[Queued]"))
 				{
 					processSelected = item;
 				}

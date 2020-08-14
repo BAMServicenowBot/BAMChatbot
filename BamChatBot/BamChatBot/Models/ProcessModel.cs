@@ -23,6 +23,8 @@ namespace BamChatBot.Models
 		public Robot Bot { get; set; }
 		public bool FirstBot { get; set; }
 		public bool ReEnterBot { get; set; }
+		public string queuedId { get; set; }
+		public string releaseId { get; set; }
 
 		public ProcessModel()
         {

@@ -149,6 +149,10 @@ namespace BamChatBot.Dialogs
 					{
 						ProcessId = processDetails.ProcessSelected.Sys_id
 					};
+					if (!string.IsNullOrEmpty( processDetails.ProcessSelected.queuedId))
+					{
+						apiRequest.Queued = true;
+					}
 
 					var jobIds = new List<string>();
 					var releaseIds = new List<string>();

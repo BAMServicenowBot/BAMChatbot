@@ -40,11 +40,11 @@ namespace BamChatBot.Dialogs
 Action = new CardAction(ActionTypes.PostBack, "To Contact RPA Support click here", null, "To Contact RPA Support click here", "openEmail", value: value, null)
 		 }
 };
-			/*var rpaService = new RPAService();
-			choices.Add(rpaService.GetRPASupportOption());*/
+			var rpaService = new RPAService();
+			choices.Add(rpaService.GetMainMenuOption());
 			return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions
 			{
-				Prompt = (Activity)ChoiceFactory.SuggestedAction(choices, "You have made 3 attempts, please contact RPA Support or type menu to go back to main menu.")
+				Prompt = (Activity)ChoiceFactory.SuggestedAction(choices, "You have made 3 attempts, please contact RPA Support or go back to Main Menu.")
 			},
 				cancellationToken);
 		}
@@ -63,14 +63,14 @@ Action = new CardAction(ActionTypes.PostBack, "To Contact RPA Support click here
 
 			if (!string.IsNullOrEmpty(promptOption.Id))
 			{
-				if (promptOption.Id != "rpaSuport")
+				if (promptOption.Id != "rpaSuport" && promptOption.Id != "mainMenu")
 				{
 					processDetails.Action = "pastMenu";
 					return await stepContext.ReplaceDialogAsync(nameof(MainDialog), processDetails, cancellationToken);
 				}
 				result = promptOption.Value;
 			}
-			if (result.ToLower() == "menu" || result.ToLower() == "m")
+			if (result.ToLower().Contains("menu") || result.ToLower().Contains("m"))
 			{
 				return await stepContext.ReplaceDialogAsync(nameof(MainDialog), null, cancellationToken);
 			}

@@ -10,6 +10,7 @@ namespace BamChatBot.Models
         public List<string> Ids { get; set; }
         public bool IsJob { get; set; }
 		public string ProcessId { get; set; }
+		public bool Queued { get; set; }
 		public APIRequest()
         {
             Ids = new List<string>();
