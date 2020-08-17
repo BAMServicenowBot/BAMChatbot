@@ -45,7 +45,7 @@ namespace BamChatBot.Dialogs
 		{
 			var processDetails = (ProcessDetails)stepContext.Options;
 			var processes = processDetails.Processes;
-			var text = "Here are your bots in progress. ";
+			var text = "Here are your processes in progress. ";
 			if (processDetails.LoadMore)
 			{
 				text = string.Empty;
