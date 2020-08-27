@@ -352,7 +352,20 @@ namespace BamChatBot.Dialogs
 					case "help":
 					case "need help":
 					case "help needed":
-						var confirmChoices = rpaService.GetConfirmChoices();
+						//var confirmChoices = rpaService.GetConfirmChoices();
+						var noOption = JsonConvert.SerializeObject(new PromptOption { Id = "Confirm", Value = "No" });
+						var valueRPA = JsonConvert.SerializeObject(new PromptOption { Id = "rpaSuport", Value = "RPASupport@bayview.com" });
+						var confirmChoices = new List<Choice>
+				        { new Choice
+							{
+								Value = "Yes",
+								Action = new CardAction(ActionTypes.PostBack, "Yes", null, "Yes", "openEmail", value: valueRPA, null) },
+								new Choice
+							{
+								Value = "No",
+								Action = new CardAction(ActionTypes.PostBack, "No", null, "No", "No", value: noOption, null)
+							}
+						};
 						return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions
 						{
 							Prompt = (Activity)ChoiceFactory.SuggestedAction(confirmChoices, "You would like to contact RPA Support, is that correct?")
@@ -444,7 +457,7 @@ namespace BamChatBot.Dialogs
 
 			if (!string.IsNullOrEmpty(promptOption.Id))
 			{
-				if (promptOption.Id != "Confirm" && promptOption.Id != "mainMenu" && promptOption.Id != "FinalStep")
+				if (promptOption.Id != "Confirm" && promptOption.Id != "mainMenu" && promptOption.Id != "FinalStep" && promptOption.Id != "rpaSuport")
 				{
 					processDetails.Action = "pastMenu";
 					return await stepContext.ReplaceDialogAsync(nameof(MainDialog), processDetails, cancellationToken);
@@ -453,7 +466,8 @@ namespace BamChatBot.Dialogs
 			}
 			if (option.ToLower() == "yes" || option.ToLower() == "y")
 			{
-				var value = JsonConvert.SerializeObject(new PromptOption { Id = "rpaSuport", Value = "RPASupport@bayview.com" });
+				return await stepContext.ReplaceDialogAsync(InitialDialogId, processDetails, cancellationToken);
+				/*var value = JsonConvert.SerializeObject(new PromptOption { Id = "rpaSuport", Value = "RPASupport@bayview.com" });
 				var choices = new List<Choice>
 				{ new Choice
 							{
@@ -466,7 +480,7 @@ namespace BamChatBot.Dialogs
 				{
 					Prompt = (Activity)ChoiceFactory.SuggestedAction(choices, "To Contact RPA Support, click Button below")
 					
-				}, cancellationToken);
+				}, cancellationToken);*/
 			}
 			else if(option.ToLower() == "main menu" || option.ToLower() == "m")
 			{
