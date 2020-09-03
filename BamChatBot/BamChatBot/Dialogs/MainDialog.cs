@@ -44,6 +44,7 @@ namespace BamChatBot.Dialogs
 			AddDialog(new StatusDialog());
 			AddDialog(new EndConversationDialog());
 			AddDialog(new StopProcessDialog());
+			AddDialog(new SupportDialog());
 			AddDialog(new WaterfallDialog(nameof(WaterfallDialog), new WaterfallStep[]
 			{
 				IntroStepAsync,
@@ -352,24 +353,8 @@ namespace BamChatBot.Dialogs
 					case "help":
 					case "need help":
 					case "help needed":
-						//var confirmChoices = rpaService.GetConfirmChoices();
-						var noOption = JsonConvert.SerializeObject(new PromptOption { Id = "Confirm", Value = "No" });
-						var valueRPA = JsonConvert.SerializeObject(new PromptOption { Id = "rpaSuport", Value = "RPASupport@bayview.com" });
-						var confirmChoices = new List<Choice>
-				        { new Choice
-							{
-								Value = "Yes",
-								Action = new CardAction(ActionTypes.PostBack, "Yes", null, "Yes", "openEmail", value: valueRPA, null) },
-								new Choice
-							{
-								Value = "No",
-								Action = new CardAction(ActionTypes.PostBack, "No", null, "No", "No", value: noOption, null)
-							}
-						};
-						return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions
-						{
-							Prompt = (Activity)ChoiceFactory.SuggestedAction(confirmChoices, "You would like to contact RPA Support, is that correct?")
-						}, cancellationToken);
+						return await stepContext.BeginDialogAsync(nameof(SupportDialog), processDetails, cancellationToken);
+						
 					case "request an enhancement":
 					case "enhancement":
 					case "request":
@@ -464,9 +449,9 @@ namespace BamChatBot.Dialogs
 				}
 				option = promptOption.Value;
 			}
-			if (option.ToLower() == "yes" || option.ToLower() == "y")
-			{
-				return await stepContext.ReplaceDialogAsync(InitialDialogId, processDetails, cancellationToken);
+			//if (option.ToLower() == "yes" || option.ToLower() == "y")
+			//{
+				//return await stepContext.ReplaceDialogAsync(InitialDialogId, processDetails, cancellationToken);
 				/*var value = JsonConvert.SerializeObject(new PromptOption { Id = "rpaSuport", Value = "RPASupport@bayview.com" });
 				var choices = new List<Choice>
 				{ new Choice
@@ -481,8 +466,8 @@ namespace BamChatBot.Dialogs
 					Prompt = (Activity)ChoiceFactory.SuggestedAction(choices, "To Contact RPA Support, click Button below")
 					
 				}, cancellationToken);*/
-			}
-			else if(option.ToLower() == "main menu" || option.ToLower() == "m")
+			//}
+			if(option.ToLower() == "main menu" || option.ToLower() == "m")
 			{
 				
 				return await stepContext.ReplaceDialogAsync(InitialDialogId, null, cancellationToken);
