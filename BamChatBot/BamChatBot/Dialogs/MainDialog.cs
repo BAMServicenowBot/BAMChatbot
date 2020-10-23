@@ -402,6 +402,20 @@ namespace BamChatBot.Dialogs
 						{
 							Prompt = (Activity)ChoiceFactory.SuggestedAction(options, "To go to Bot Portal, click Button below")
 						}, cancellationToken);
+					case "RPA Process Schedules":
+					case "rpa process schedules":
+						processDetails.Action = string.Empty;
+						var rpaProcessSchValue = JsonConvert.SerializeObject(new PromptOption { Id = "FinalStep", Value = "bam?id=rpa_process_scheduler" });
+						options = new List<Choice> { new Choice
+							{
+								Value = "bam?id=rpa_processes",
+								Action = new CardAction(ActionTypes.PostBack, "Click Here", null, "Click Here", "openUrl", value: rpaProcessSchValue, null)
+							 } };
+						options.Add(rpaService.GetMainMenuOption());
+						return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions
+						{
+							Prompt = (Activity)ChoiceFactory.SuggestedAction(options, "To go to RPA Process Schedules, click Button below")
+						}, cancellationToken);
 
 					case "end chat":
 					case "exit":

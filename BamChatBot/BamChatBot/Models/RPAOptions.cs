@@ -21,6 +21,7 @@ namespace BamChatBot.Models
 				new PromptOption {Id = "RPAOptions", Value = "Submit a New Idea"},
 				new PromptOption {Id = "RPAOptions", Value = "**Contact RPA Support**"},
 				new PromptOption {Id = "RPAOptions", Value = "Bot Portal"},
+				new PromptOption {Id = "RPAOptions", Value = "RPA Process Schedules"},
 				new PromptOption {Id = "RPAOptions", Value = "End Chat"}
 			};
 		}
