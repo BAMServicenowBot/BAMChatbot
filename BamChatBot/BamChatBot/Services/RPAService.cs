@@ -35,7 +35,7 @@ namespace BamChatBot.Services
 
 		internal string GetInstanceName()
 		{
-			var instance = "bayviewuat";
+			var instance = "bayview";
 			return instance;
 		}
 

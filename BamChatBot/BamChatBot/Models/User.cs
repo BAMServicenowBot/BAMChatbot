@@ -18,7 +18,8 @@ namespace BamChatBot.Models
         public string Error { get; set; }
 		public string u_last_index { get; set; }
 		public string u_conversation_id { get; set; }
-		//public string sys_id { get; set; }
+		public string instance { get; set; }
+										   //public string sys_id { get; set; }
 
 
 		/*internal User GetUser(string userId)
@@ -53,10 +54,10 @@ namespace BamChatBot.Models
             
             //Dispose once all HttpClient calls are complete. This is not necessary if the containing object will be disposed of; for example in this case the HttpClient instance will be disposed automatically when the application terminates so the following call is superfluous.
             client.Dispose();*/
-          //  return user;
-       // }
+		//  return user;
+		// }
 
-        internal string GetLoginUserName()
+		internal string GetLoginUserName()
         {
             var name = System.Security.Principal.WindowsIdentity.GetCurrent().Name;
             var slashIndex = name.IndexOf("\\");
