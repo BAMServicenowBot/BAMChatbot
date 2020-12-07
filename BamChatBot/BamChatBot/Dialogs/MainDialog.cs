@@ -45,6 +45,7 @@ namespace BamChatBot.Dialogs
 			AddDialog(new EndConversationDialog());
 			AddDialog(new StopProcessDialog());
 			AddDialog(new SupportDialog());
+			AddDialog(new OpenURLDialog());
 			AddDialog(new WaterfallDialog(nameof(WaterfallDialog), new WaterfallStep[]
 			{
 				IntroStepAsync,
@@ -189,7 +190,8 @@ namespace BamChatBot.Dialogs
 							choices.Add(new Choice
 							{
 								Value = option.Value,
-								Action = new CardAction(ActionTypes.PostBack, option.Value, null, option.Value, option.Value, value: value, null)
+								Action = new CardAction(ActionTypes.PostBack, option.Text, null, option.Text, option.DisplayText, value: value, null)
+								                      //ActionTypes.PostBack, "Click Here", null, "Click Here", "openUrl", value: value, null
 							});
 
 						}
@@ -275,6 +277,7 @@ namespace BamChatBot.Dialogs
 			try
 			{
 				promptOption = JsonConvert.DeserializeObject<PromptOption>(stepContext.Result.ToString());
+				processDetails.PromptOption = promptOption;
 			}
 			catch (Exception) { }
 
@@ -332,8 +335,10 @@ namespace BamChatBot.Dialogs
 					case "report issue":
 					case "bot failed":
 					case "bot not working":
-						processDetails.Action = string.Empty;
-						var value = JsonConvert.SerializeObject(new PromptOption { Id = "FinalStep", Value = "bam?id=rpa_new_request&type=incident" }); 
+					case "bam?id=rpa_new_request&type=incident":
+						processDetails.Action = string.IsNullOrEmpty(promptOption.Id)? "typed" : string.Empty;
+						return await stepContext.ReplaceDialogAsync(nameof(OpenURLDialog), processDetails, cancellationToken);
+						/*var value = JsonConvert.SerializeObject(new PromptOption { Id = "FinalStep", Value = "bam?id=rpa_new_request&type=incident" }); 
 						var choices = new List<Choice> { new Choice
 							{
 								Value = "bam?id=rpa_new_request&type=incident",
@@ -344,7 +349,7 @@ namespace BamChatBot.Dialogs
 						return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions
 						{
 							Prompt = (Activity)ChoiceFactory.SuggestedAction(choices, "To Report an Issue, click Button below")
-						}, cancellationToken);
+						}, cancellationToken);*/
 					case "**contact rpa support**":
 					case "contact rpa support":
 					case "rpa support":
@@ -359,8 +364,10 @@ namespace BamChatBot.Dialogs
 					case "enhancement":
 					case "request":
 					case "new request":
-						processDetails.Action = string.Empty;
-						var enhancementValue = JsonConvert.SerializeObject(new PromptOption { Id = "FinalStep", Value = "bam?id=rpa_new_request&type=enhancement" });
+					case "bam?id=rpa_new_request&type=enhancement":
+						processDetails.Action = string.IsNullOrEmpty(promptOption.Id) ? "typed" : string.Empty;
+						return await stepContext.ReplaceDialogAsync(nameof(OpenURLDialog), processDetails, cancellationToken);
+						/*var enhancementValue = JsonConvert.SerializeObject(new PromptOption { Id = "FinalStep", Value = "bam?id=rpa_new_request&type=enhancement" });
 						var options = new List<Choice> { new Choice
 							{
 								Value = "bam?id=rpa_new_request&type=enhancement",
@@ -370,15 +377,17 @@ namespace BamChatBot.Dialogs
 						return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions
 						{
 							Prompt = (Activity)ChoiceFactory.SuggestedAction(options, "To Request an Enhancement, click Button below")
-						}, cancellationToken);
+						}, cancellationToken);*/
 					case "submit a new idea":
 					case "new idea":
 					case "idea":
 					case "new project":
 					case "new process":
 					case "project request":
-						processDetails.Action = string.Empty;
-						var ideaValue = JsonConvert.SerializeObject(new PromptOption { Id = "FinalStep", Value = "bam?id=sc_cat_item&sys_id=a41ac289db7c6f0004b27709af9619a3" });
+					case "bam?id=sc_cat_item&sys_id=a41ac289db7c6f0004b27709af9619a3":
+						processDetails.Action = string.IsNullOrEmpty(promptOption.Id) ? "typed" : string.Empty;
+						return await stepContext.ReplaceDialogAsync(nameof(OpenURLDialog), processDetails, cancellationToken);
+						/*var ideaValue = JsonConvert.SerializeObject(new PromptOption { Id = "FinalStep", Value = "bam?id=sc_cat_item&sys_id=a41ac289db7c6f0004b27709af9619a3" });
 						return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions
 						{
 							Prompt = (Activity)ChoiceFactory.SuggestedAction(new List<Choice> { new Choice
@@ -387,11 +396,13 @@ namespace BamChatBot.Dialogs
 								Action = new CardAction(ActionTypes.PostBack, "Click Here", null, "Click Here", "openUrl", value: ideaValue, null)
 							 } ,rpaService.GetMainMenuOption()}, "To Submit an Idea, click Button below")
 							
-						}, cancellationToken);
+						}, cancellationToken);*/
 					case "Bot Portal":
 					case "bot portal":
-						processDetails.Action = string.Empty;
-						var rpaProcessValue = JsonConvert.SerializeObject(new PromptOption { Id = "FinalStep", Value = "bam?id=rpa_processes" });
+					case "bam?id=rpa_processes":
+						processDetails.Action = string.IsNullOrEmpty(promptOption.Id) ? "typed" : string.Empty;
+						return await stepContext.ReplaceDialogAsync(nameof(OpenURLDialog), processDetails, cancellationToken);
+						/*var rpaProcessValue = JsonConvert.SerializeObject(new PromptOption { Id = "FinalStep", Value = "bam?id=rpa_processes" });
 						options = new List<Choice> { new Choice
 							{
 								Value = "bam?id=rpa_processes",
@@ -401,11 +412,13 @@ namespace BamChatBot.Dialogs
 						return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions
 						{
 							Prompt = (Activity)ChoiceFactory.SuggestedAction(options, "To go to Bot Portal, click Button below")
-						}, cancellationToken);
+						}, cancellationToken);*/
 					case "RPA Process Schedules":
 					case "rpa process schedules":
-						processDetails.Action = string.Empty;
-						var rpaProcessSchValue = JsonConvert.SerializeObject(new PromptOption { Id = "FinalStep", Value = "bam?id=rpa_process_scheduler" });
+					case "bam?id=rpa_process_scheduler":
+						processDetails.Action = string.IsNullOrEmpty(promptOption.Id) ? "typed" : string.Empty;
+						return await stepContext.ReplaceDialogAsync(nameof(OpenURLDialog), processDetails, cancellationToken);
+						/*var rpaProcessSchValue = JsonConvert.SerializeObject(new PromptOption { Id = "FinalStep", Value = "bam?id=rpa_process_scheduler" });
 						options = new List<Choice> { new Choice
 							{
 								Value = "bam?id=rpa_processes",
@@ -415,7 +428,7 @@ namespace BamChatBot.Dialogs
 						return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions
 						{
 							Prompt = (Activity)ChoiceFactory.SuggestedAction(options, "To go to RPA Process Schedules, click Button below")
-						}, cancellationToken);
+						}, cancellationToken);*/
 
 					case "end chat":
 					case "exit":

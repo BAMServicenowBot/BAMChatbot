@@ -24,6 +24,7 @@ namespace BamChatBot.Models
 		public string ConversationId { get; set; }
 		public string Info { get; set; }
 		public string Robot { get; set; }
+		public string startedBy { get; set; }
 
 	}
 

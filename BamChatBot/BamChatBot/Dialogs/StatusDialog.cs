@@ -198,14 +198,15 @@ namespace BamChatBot.Dialogs
 							var endTime = item.End!=null ? "End Time: " + item.End + Environment.NewLine : string.Empty;
 							var startTime = item.Start != null ? "Start Time: " + item.Start + Environment.NewLine : string.Empty;
 
-							text += 
+							text +=
 								"Status: " + item.State.label + Environment.NewLine +
-								startTime+
+								startTime +
 								endTime +
 								include +
-								"Total Transactions Successful: " +Convert.ToInt32(item.TotalTransSuccessful) + Environment.NewLine +
+								"Total Transactions Successful: " + Convert.ToInt32(item.TotalTransSuccessful) + Environment.NewLine +
 								"Total Exceptions: " + Convert.ToInt32(item.TotalExceptions) + Environment.NewLine +
-								"Bot Name: " + item.Robot; 
+								"Bot Name: " + item.Robot + Environment.NewLine +
+								"Started By: " + item.startedBy;
 						}
 						
 					}

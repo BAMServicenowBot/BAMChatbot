@@ -19,6 +19,7 @@ namespace BamChatBot
 		public bool LoadMore { get; set; }
 		public ConversationFlow CurrentQuestion { get; set; }
 		public int AttemptCount { get; set; }
+		public PromptOption PromptOption { get; set; }
 		public ProcessDetails()
         {
             Processes = new List<ProcessModel>();
